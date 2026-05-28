@@ -21,6 +21,20 @@ services:
       - app-network
     command: uvicorn api:app --host 0.0.0.0 --port 8000 --reload
 
+  # Backend Quântico (Porta 8001)
+  backend-quantica:
+    build:
+      context: ./backend/quantica
+      dockerfile: Dockerfile
+    container_name: quantica-api
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./backend/quantica:/app
+    networks:
+      - app-network
+    command: uvicorn api:app --host 0.0.0.0 --port 8001 --reload
+
   # Frontend (Porta 3000)
   frontend:
     build:
