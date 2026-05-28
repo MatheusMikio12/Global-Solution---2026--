@@ -778,3 +778,314 @@ footer {
   border-top: 1px solid var(--border-lo);
   text-transform: uppercase;
 }
+
+/* ── API Docs button ─────────────────────────────────────── */
+.btn-api-docs {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  background: rgba(0,242,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  font-family: var(--hud);
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.2s, border-color 0.2s;
+}
+.btn-api-docs:hover { color: var(--cyan); border-color: var(--cyan-border); }
+
+/* ── Download button ─────────────────────────────────────── */
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  background: rgba(0,255,157,0.05);
+  border: 1px solid rgba(0,255,157,0.22);
+  border-radius: var(--r-xs);
+  font-family: var(--hud);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--green);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: box-shadow 0.2s, background 0.2s;
+  white-space: nowrap;
+}
+.btn-download:hover { background: rgba(0,255,157,0.10); box-shadow: 0 0 14px rgba(0,255,157,0.15); }
+
+/* ── Toast ───────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 14px 20px;
+  border-radius: var(--r-sm);
+  font-family: var(--data);
+  font-size: 0.82rem;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+  animation: toastIn 0.3s ease;
+  max-width: 360px;
+}
+@keyframes toastIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.toast-success {
+  background: rgba(0,255,157,0.10);
+  border: 1px solid rgba(0,255,157,0.28);
+  color: var(--green);
+}
+.toast-error {
+  background: rgba(255,63,108,0.10);
+  border: 1px solid rgba(255,63,108,0.28);
+  color: var(--red);
+}
+.toast-close {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1rem;
+  opacity: 0.7;
+  padding: 0 2px;
+  transition: opacity 0.2s;
+}
+.toast-close:hover { opacity: 1; }
+
+/* ── Skeleton animation ──────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg,
+    rgba(0,242,255,0.05) 25%,
+    rgba(0,242,255,0.10) 50%,
+    rgba(0,242,255,0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Dashboard: KPI header row ───────────────────────────── */
+.kpi-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ── Dashboard: charts row ───────────────────────────────── */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+@media (max-width: 860px) {
+  .charts-row { grid-template-columns: 1fr; }
+}
+.chart-card { min-width: 0; }
+
+/* ── Dashboard: alerts header + filters ──────────────────── */
+.alerts-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.filters-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.filter-select {
+  padding: 5px 10px;
+  background: rgba(0,242,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  color: var(--text);
+  font-family: var(--data);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23527f96'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 26px;
+}
+.filter-select:focus { outline: none; border-color: var(--cyan); }
+.filter-select option { background: #10131a; }
+.filter-count {
+  font-family: var(--data);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* ── RPA: running step label ─────────────────────────────── */
+.running-etapa {
+  color: var(--cyan);
+  animation: badgePulse 1.5s ease-in-out infinite;
+}
+
+/* ── RPA: step state variants ────────────────────────────── */
+.step-state-done    { background: rgba(0,255,157,0.04); border-color: rgba(0,255,157,0.18); }
+.step-state-running {
+  background: rgba(0,242,255,0.06);
+  border-color: rgba(0,242,255,0.32);
+  box-shadow: 0 0 20px rgba(0,242,255,0.08);
+  animation: stepPulse 1.5s ease-in-out infinite;
+}
+@keyframes stepPulse {
+  0%,100% { box-shadow: 0 0 12px rgba(0,242,255,0.06); }
+  50%     { box-shadow: 0 0 24px rgba(0,242,255,0.16); }
+}
+.step-num-done {
+  background: rgba(0,255,157,0.10);
+  border-color: rgba(0,255,157,0.30);
+  color: var(--green);
+}
+.step-num-running {
+  background: rgba(0,242,255,0.12);
+  border-color: rgba(0,242,255,0.40);
+  color: var(--cyan);
+  animation: spinSlow 1.5s linear infinite;
+}
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── NASA: summary bar ───────────────────────────────────── */
+.nasa-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(0,242,255,0.03);
+  border: 1px solid var(--border-lo);
+  border-radius: var(--r-sm);
+}
+.nasa-stat {
+  font-family: var(--data);
+  font-size: 0.80rem;
+  color: var(--text);
+}
+.nasa-extremo-stat { color: var(--red); font-weight: 600; }
+
+/* ── NASA: timeline grid ─────────────────────────────────── */
+.nasa-timeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 0.75rem;
+}
+.nasa-day {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  cursor: default;
+  transition: transform 0.1s;
+}
+.nasa-day:hover { transform: scale(1.4); }
+.day-extremo { background: rgba(255,63,108,0.75); border: 1px solid rgba(255,63,108,0.5); }
+.day-normal  { background: rgba(0,255,157,0.25);  border: 1px solid rgba(0,255,157,0.20); }
+.nasa-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  align-items: center;
+}
+.nasa-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+/* ── Placeholder: rich content ───────────────────────────── */
+.ph-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.ph-icon {
+  font-size: 2.8rem;
+  filter: drop-shadow(0 0 24px rgba(0,242,255,0.45));
+  flex-shrink: 0;
+}
+.ph-intro {
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.75;
+  max-width: 680px;
+}
+.ph-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+.ph-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.ph-card-icon {
+  font-size: 1.8rem;
+  filter: drop-shadow(0 0 14px rgba(0,242,255,0.35));
+}
+.ph-card-title {
+  font-family: var(--hud);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text-hi);
+  text-transform: uppercase;
+}
+.ph-card-desc {
+  font-size: 0.80rem;
+  color: var(--text);
+  line-height: 1.75;
+}
+.ph-fiap-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.ph-fiap-label {
+  font-family: var(--hud);
+  font-size: 0.57rem;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.ph-fiap-value {
+  font-family: var(--data);
+  font-size: 0.80rem;
+  color: var(--cyan);
+}
+

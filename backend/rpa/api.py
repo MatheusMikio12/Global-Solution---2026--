@@ -24,6 +24,7 @@ from typing import Optional
 import uvicorn
 from fastapi import FastAPI, BackgroundTasks, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 import config
@@ -46,11 +47,13 @@ app.add_middleware(
 
 # Estado interno do pipeline (em memória)
 _estado = {
-    "status":      "idle",        # idle | running | done | error
-    "iniciado_em": None,
+    "status":       "idle",        # idle | running | done | error
+    "iniciado_em":  None,
     "concluido_em": None,
-    "erro":        None,
-    "com_ia":      True,
+    "erro":         None,
+    "com_ia":       True,
+    "etapa_atual":  0,             # 0=idle, 1–5 durante execução
+    "etapa_nome":   "",
 }
 
 
@@ -74,12 +77,19 @@ def _carregar_json() -> dict:
         return json.load(f)
 
 
+def _set_etapa(num: int, nome: str):
+    _estado["etapa_atual"] = num
+    _estado["etapa_nome"]  = nome
+
+
 def _executar_pipeline(usar_ia: bool, max_alertas: int):
     """Roda o pipeline completo em background."""
     _estado["status"]      = "running"
     _estado["iniciado_em"] = datetime.now().isoformat()
     _estado["erro"]        = None
     _estado["com_ia"]      = usar_ia
+    _estado["etapa_atual"] = 0
+    _estado["etapa_nome"]  = ""
 
     try:
         from modulo1_gerador       import gerar_dados_climaticos
@@ -90,19 +100,28 @@ def _executar_pipeline(usar_ia: bool, max_alertas: int):
         os.makedirs(config.DIR_DATA,    exist_ok=True)
         os.makedirs(config.DIR_OUTPUTS, exist_ok=True)
 
+        _set_etapa(1, "Gerando dados satelitais")
         gerar_dados_climaticos()
+
+        _set_etapa(2, "Ingestão e limpeza")
         df = carregar_e_limpar()
+
+        _set_etapa(3, "Detectando anomalias")
         df = detectar_anomalias(df)
 
         if usar_ia and config.GOOGLE_API_KEY:
+            _set_etapa(4, "Classificando com Gemini")
             from modulo4_classificacao_ia import classificar_todos_riscos
             df = classificar_todos_riscos(df, max_por_regiao=max_alertas)
 
+        _set_etapa(5, "Gerando relatório")
         gerar_relatorio(df)
         exportar_json(df)
 
         _estado["status"]       = "done"
         _estado["concluido_em"] = datetime.now().isoformat()
+        _estado["etapa_atual"]  = 0
+        _estado["etapa_nome"]   = ""
 
     except Exception as e:
         _estado["status"] = "error"
@@ -116,12 +135,14 @@ def _executar_pipeline(usar_ia: bool, max_alertas: int):
 def status():
     """Verifica se a API está online e retorna o estado atual do pipeline."""
     return {
-        "api":            "online",
-        "pipeline":       _estado["status"],
-        "iniciado_em":    _estado["iniciado_em"],
-        "concluido_em":   _estado["concluido_em"],
-        "ia_disponivel":  bool(config.GOOGLE_API_KEY),
-        "erro":           _estado["erro"],
+        "api":           "online",
+        "pipeline":      _estado["status"],
+        "iniciado_em":   _estado["iniciado_em"],
+        "concluido_em":  _estado["concluido_em"],
+        "ia_disponivel": bool(config.GOOGLE_API_KEY),
+        "erro":          _estado["erro"],
+        "etapa_atual":   _estado["etapa_atual"],
+        "etapa_nome":    _estado["etapa_nome"],
     }
 
 
@@ -192,6 +213,21 @@ def serie_temporal(regiao: Optional[str] = Query(None, description="Filtrar por 
     if regiao:
         dados = [p for p in dados if p.get("regiao", "").lower() == regiao.lower()]
     return {"total_pontos": len(dados), "serie": dados}
+
+
+@app.get("/resultados/download-relatorio", tags=["Resultados"])
+def download_relatorio():
+    """Faz o download do relatório Excel gerado pelo pipeline."""
+    if not os.path.exists(config.ARQUIVO_EXCEL):
+        raise HTTPException(
+            status_code=404,
+            detail="Relatório não encontrado. Execute POST /pipeline/rodar primeiro."
+        )
+    return FileResponse(
+        config.ARQUIVO_EXCEL,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        filename="relatorio_overwatch.xlsx",
+    )
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────

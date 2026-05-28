@@ -182,6 +182,11 @@ class APIService {
       body: JSON.stringify(params),
     });
   }
+
+  static downloadRelatorioUrl() {
+    return `${API_BASE_URL}/resultados/download-relatorio`;
+  }
 }
+
 
 export default APIService;
