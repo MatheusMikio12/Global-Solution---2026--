@@ -69,6 +69,8 @@ export default function App() {
 
   return (
     <div className="app">
+      <div className="starfield" aria-hidden="true" />
+      <div className="scanlines" aria-hidden="true" />
       {/* Header */}
       <header>
         <div className="header-inner">
