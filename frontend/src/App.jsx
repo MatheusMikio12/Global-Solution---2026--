@@ -110,7 +110,8 @@ export default function App() {
 
         {activeTab === 'dashboard'  && <TabDashboard resumo={resumo} apiOnline={apiOnline} pipelineStatus={pipelineStatus} alertas={alertas} />}
         {activeTab === 'rpa'        && <TabRPA status={status} apiOnline={apiOnline} pipelineStatus={pipelineStatus} loading={loading} usarIa={usarIa} setUsarIa={setUsarIa} maxAlertas={maxAlertas} setMaxAlertas={setMaxAlertas} rodarPipeline={rodarPipeline} erroDisparo={erroDisparo} />}
-        {!['dashboard', 'rpa'].includes(activeTab) && <TabPlaceholder tab={TABS.find(t => t.id === activeTab)} />}
+        {activeTab === 'quantica'   && <TabQuantica />}
+        {!['dashboard', 'rpa', 'quantica'].includes(activeTab) && <TabPlaceholder tab={TABS.find(t => t.id === activeTab)} />}
       </main>
 
       <footer>OVERWATCH · FIAP Global Solution 2026</footer>
@@ -268,6 +269,236 @@ function TabRPA({ status, apiOnline, pipelineStatus, loading, usarIa, setUsarIa,
           ))}
         </div>
       </section>
+    </div>
+  )
+}
+
+// ── Tab: Quântica ──────────────────────────────────────────────────────────
+
+function TabQuantica() {
+  const [qOnline,       setQOnline]       = useState(false)
+  const [qStatus,       setQStatus]       = useState(null)
+  const [qModelos,      setQModelos]      = useState(null)
+  const [loadingPrever, setLoadingPrever] = useState(false)
+  const [resultado,     setResultado]     = useState(null)
+  const [erroPrever,    setErroPrever]    = useState(null)
+  const [form, setForm] = useState({
+    T2M: 22.5, PRECTOTCORR: 5.0, WS10M: 3.5, RH2M: 78.0, ALLSKY_SFC_LW_DWN: 370.0, date: '',
+  })
+
+  useEffect(() => {
+    APIService.quanticaStatus()
+      .then(d => { setQStatus(d); setQOnline(true) })
+      .catch(() => { setQOnline(false); setQStatus(null) })
+    APIService.quanticaModelos()
+      .then(setQModelos)
+      .catch(() => {})
+  }, [])
+
+  const handlePrever = async (e) => {
+    e.preventDefault()
+    setErroPrever(null); setLoadingPrever(true)
+    try {
+      const dados = {
+        T2M:               parseFloat(form.T2M),
+        PRECTOTCORR:       parseFloat(form.PRECTOTCORR),
+        WS10M:             parseFloat(form.WS10M),
+        RH2M:              parseFloat(form.RH2M),
+        ALLSKY_SFC_LW_DWN: parseFloat(form.ALLSKY_SFC_LW_DWN),
+      }
+      if (form.date) dados.date = form.date
+      const res = await APIService.quanticaPrever(dados)
+      setResultado(res)
+    } catch {
+      setErroPrever('Erro ao chamar a API quântica. Inicie com: cd backend/quantica && python api.py')
+    } finally { setLoadingPrever(false) }
+  }
+
+  const setField = (key) => (val) => setForm(f => ({ ...f, [key]: val }))
+
+  return (
+    <div>
+      {/* Status */}
+      <section className="card">
+        <h2 className="section-title">Status da API Quântica</h2>
+        <div className="status-row">
+          <span className={`api-badge ${qOnline ? 'online' : 'offline'}`}>
+            {qOnline ? '● Online' : '○ Offline'}
+          </span>
+          {qStatus && <>
+            <span className="label">Fonte: {qStatus.fonte}</span>
+            <span className="label">Qubits: {qStatus.n_qubits}</span>
+          </>}
+        </div>
+
+        {!qOnline && (
+          <div className="alert-box error" style={{ marginTop: '1rem' }}>
+            Backend offline. Inicie com: <code>cd backend/quantica && python api.py</code>
+          </div>
+        )}
+
+        {qStatus?.modelos && (
+          <div className="q-models-grid">
+            {Object.entries(qStatus.modelos).map(([nome, st]) => (
+              <div key={nome} className={`q-model-card ${st === 'ok' ? 'ok' : 'err'}`}>
+                <span className="q-model-name">{nome}</span>
+                <span className={`q-model-badge ${st === 'ok' ? 'ok' : 'err'}`}>
+                  {st === 'ok' ? '✓ OK' : '✗ Erro'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Formulário de predição */}
+      <section className="card" style={{ marginTop: '1.5rem' }}>
+        <h2 className="section-title">Classificar Evento Climático</h2>
+        <p className="label" style={{ marginBottom: '1.25rem' }}>
+          Insira as 5 variáveis NASA POWER — o ensemble de modelos (SVM-RBF, Random Forest, QSVC, VQC)
+          classifica o dia como <strong>Extremo</strong> ou <strong>Normal</strong> por votação.
+        </p>
+
+        <form onSubmit={handlePrever}>
+          <div className="q-form-grid">
+            <QField label="T2M" unit="°C" desc="Temperatura a 2m" value={form.T2M} onChange={setField('T2M')} />
+            <QField label="PRECTOTCORR" unit="mm/dia" desc="Precipitação corrigida" value={form.PRECTOTCORR} onChange={setField('PRECTOTCORR')} />
+            <QField label="WS10M" unit="m/s" desc="Velocidade do vento a 10m" value={form.WS10M} onChange={setField('WS10M')} />
+            <QField label="RH2M" unit="%" desc="Umidade relativa a 2m" value={form.RH2M} onChange={setField('RH2M')} />
+            <QField label="ALLSKY_SFC_LW_DWN" unit="W/m²" desc="Radiação solar descendente" value={form.ALLSKY_SFC_LW_DWN} onChange={setField('ALLSKY_SFC_LW_DWN')} />
+            <div className="q-field">
+              <label className="q-label">Data <span className="q-unit">(opcional)</span></label>
+              <span className="q-desc">Informativo — YYYY-MM-DD</span>
+              <input type="date" value={form.date} onChange={e => setField('date')(e.target.value)} className="q-input" />
+            </div>
+          </div>
+
+          <button type="submit" className="btn-run" style={{ marginTop: '1.25rem' }}
+            disabled={loadingPrever || !qOnline}>
+            {loadingPrever ? '⏳ Classificando...' : '⚛️ Classificar com QML'}
+          </button>
+        </form>
+
+        {erroPrever && <div className="alert-box error">{erroPrever}</div>}
+
+        {resultado && (
+          <div style={{ marginTop: '1.75rem' }}>
+            <h3 className="section-title">Resultado da Classificação</h3>
+
+            <div className="q-consensus-box">
+              <div className={`q-consensus-badge ${resultado.consenso?.label === 'Extremo' ? 'extremo' : 'normal'}`}>
+                {resultado.consenso?.label ?? '—'}
+              </div>
+              <div className="q-consensus-detail">
+                <span>Votos Extremo: <strong>{resultado.consenso?.votos_extremo}</strong></span>
+                <span>Votos Normal: <strong>{resultado.consenso?.votos_normal}</strong></span>
+                <span>Modelos votantes: <strong>{resultado.consenso?.total_modelos}</strong></span>
+                <span className="label" style={{ fontSize: '0.75rem' }}>
+                  PCA: [{resultado.pca_componentes?.map(v => v.toFixed(4)).join(', ')}]
+                </span>
+              </div>
+            </div>
+
+            <div className="table-wrapper" style={{ marginTop: '1rem' }}>
+              <table>
+                <thead><tr>
+                  <th>Modelo</th><th>Tipo</th><th>Predição</th><th>Prob / Score</th><th>AUC Treino</th>
+                </tr></thead>
+                <tbody>
+                  {Object.entries(resultado.predicoes).map(([modelo, pred]) => (
+                    <tr key={modelo}>
+                      <td><strong>{modelo}</strong></td>
+                      <td>
+                        <span className={`q-type-badge ${pred.tipo === 'quântico' ? 'quantico' : 'classico'}`}>
+                          {pred.tipo ?? '—'}
+                        </span>
+                      </td>
+                      <td>
+                        {pred.label
+                          ? <span className="sev-badge" style={{ background: pred.label === 'Extremo' ? '#C0392B' : '#1a4a2e', color: pred.label === 'Extremo' ? '#fff' : '#27ae60' }}>{pred.label}</span>
+                          : pred.erro ? <span style={{ color: '#e74c3c', fontSize: '0.78rem' }}>{pred.erro.slice(0, 60)}</span>
+                          : '—'}
+                      </td>
+                      <td>
+                        {pred.probabilidade != null
+                          ? `${(pred.probabilidade * 100).toFixed(1)}%`
+                          : pred.decision_function != null
+                            ? pred.decision_function.toFixed(4)
+                            : '—'}
+                      </td>
+                      <td>{pred.auc_treino != null ? pred.auc_treino.toFixed(4) : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="label" style={{ marginTop: '0.5rem', fontSize: '0.75rem' }}>
+              Data de referência: {resultado.data}
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* Tabela de modelos */}
+      {qModelos && (
+        <section className="card" style={{ marginTop: '1.5rem' }}>
+          <h2 className="section-title">Ensemble de Modelos — Métricas</h2>
+          <div className="table-wrapper">
+            <table>
+              <thead><tr>
+                <th>Modelo</th><th>Tipo</th><th>Acurácia</th><th>F1</th><th>AUC</th><th>Inferência</th><th>Status</th>
+              </tr></thead>
+              <tbody>
+                {qModelos.modelos?.map(m => (
+                  <tr key={m.id}>
+                    <td>
+                      <strong>{m.nome}</strong>
+                      <div style={{ fontSize: '0.72rem', color: '#5a7a9a', marginTop: '2px' }}>
+                        {m.config || m.circuito}
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`q-type-badge ${m.tipo === 'quântico' ? 'quantico' : 'classico'}`}>
+                        {m.tipo}
+                      </span>
+                    </td>
+                    <td>{m.acuracia}</td>
+                    <td>{m.f1}</td>
+                    <td>{m.auc}</td>
+                    <td>{m.inferencia_ms} ms</td>
+                    <td>
+                      <span className={`q-model-badge ${m.status === 'ok' ? 'ok' : 'err'}`}>
+                        {m.status === 'ok' ? '✓' : '✗'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {qModelos.dataset && (
+            <p className="label" style={{ marginTop: '0.75rem', fontSize: '0.77rem' }}>
+              Dataset: {qModelos.dataset.fonte} · {qModelos.dataset.local} · {qModelos.dataset.periodo} · {qModelos.dataset.registros} registros · {qModelos.dataset.extremos_pct}% extremos
+            </p>
+          )}
+          {qModelos.diagnostico_nisq && (
+            <p className="label" style={{ marginTop: '0.5rem', fontSize: '0.77rem', lineHeight: 1.6 }}>
+              ⚠️ {qModelos.diagnostico_nisq}
+            </p>
+          )}
+        </section>
+      )}
+    </div>
+  )
+}
+
+function QField({ label, unit, desc, value, onChange }) {
+  return (
+    <div className="q-field">
+      <label className="q-label">{label} <span className="q-unit">{unit}</span></label>
+      <span className="q-desc">{desc}</span>
+      <input type="number" step="any" value={value}
+        onChange={e => onChange(e.target.value)} className="q-input" required />
     </div>
   )
 }

@@ -3,7 +3,8 @@
  * Todas as chamadas ao backend passam por aqui
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_BASE_URL     = import.meta.env.VITE_API_BASE_URL     || "http://localhost:8000";
+const QUANTUM_API_URL  = import.meta.env.VITE_QUANTUM_API_URL  || "http://localhost:8001";
 
 class APIService {
   /**
@@ -140,6 +141,46 @@ class APIService {
    */
   static getInfo() {
     return this.get("/");
+  }
+
+  // ==================== ENDPOINTS QUÂNTICOS (porta 8001) ====================
+
+  static async quanticaRequest(endpoint, options = {}) {
+    const url = `${QUANTUM_API_URL}${endpoint}`;
+    const config = {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    };
+    try {
+      const response = await fetch(url, config);
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error("Quantum API Error:", error);
+      throw error;
+    }
+  }
+
+  static quanticaStatus() {
+    return this.quanticaRequest("/quantica/status", { method: "GET" });
+  }
+
+  static quanticaModelos() {
+    return this.quanticaRequest("/quantica/modelos", { method: "GET" });
+  }
+
+  static quanticaPrever(dados) {
+    return this.quanticaRequest("/quantica/prever", {
+      method: "POST",
+      body: JSON.stringify(dados),
+    });
+  }
+
+  static quanticaBuscarEPrever(params) {
+    return this.quanticaRequest("/quantica/buscar-e-prever", {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
   }
 }
 
