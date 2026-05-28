@@ -7,7 +7,7 @@ Solução completa de pipeline RPA com múltiplos projetos backend, frontend mod
 ```
 Global-Solution---2026--/
 ├── backend/
-│   └── rpa/                  # Pipeline SENTINEL principal
+│   └── rpa/                  # Pipeline OVERWATCH principal
 │       ├── config.py         # Configurações centralizadas
 │       ├── api.py            # FastAPI (porta 8000)
 │       ├── pipeline.py       # Orquestrador CLI
@@ -57,7 +57,7 @@ Global-Solution---2026--/
    ```
 
 4. **Verifique os serviços**
-   - Backend SENTINEL: http://localhost:8000
+   - Backend OVERWATCH: http://localhost:8000
    - Backend Docs (Swagger): http://localhost:8000/docs
    - Frontend: http://localhost:3000
    - pgAdmin: http://localhost:5050
@@ -100,7 +100,7 @@ npm run dev
 
 ## 📚 API Endpoints
 
-### SENTINEL (Porta 8000)
+### OVERWATCH (Porta 8000)
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
@@ -154,7 +154,7 @@ ENVIRONMENT=development
 ### Construir imagens manualmente
 
 ```bash
-# Backend SENTINEL
+# Backend OVERWATCH
 docker build -t gs-rpa-api ./backend/rpa
 
 # Frontend

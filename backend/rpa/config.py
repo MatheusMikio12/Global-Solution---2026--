@@ -1,5 +1,5 @@
 """
-SENTINEL — Configurações Centralizadas
+OVERWATCH — Configurações Centralizadas
 Altere aqui sem precisar mexer em nenhum outro arquivo.
 """
 
@@ -63,7 +63,7 @@ TIPOS_DESASTRE = [
 DIR_DATA    = "data"
 DIR_OUTPUTS = "outputs"
 ARQUIVO_CSV          = os.path.join(DIR_DATA,    "dados_climaticos.csv")
-ARQUIVO_EXCEL        = os.path.join(DIR_OUTPUTS, "relatorio_sentinel.xlsx")
+ARQUIVO_EXCEL        = os.path.join(DIR_OUTPUTS, "relatorio_overwatch.xlsx")
 ARQUIVO_JSON         = os.path.join(DIR_OUTPUTS, "resultados.json")
 
 # ── API Server ───────────────────────────────────────────────────────────────

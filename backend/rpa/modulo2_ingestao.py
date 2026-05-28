@@ -1,5 +1,5 @@
 """
-SENTINEL — Módulo 2: Ingestão e Limpeza de Dados Climáticos
+OVERWATCH — Módulo 2: Ingestão e Limpeza de Dados Climáticos
 """
 
 import pandas as pd

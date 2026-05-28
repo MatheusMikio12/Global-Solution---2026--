@@ -1,4 +1,4 @@
-# 🛰️ SENTINEL — Pipeline de Previsão Climática com Dados Espaciais
+# 🛰️ OVERWATCH — Pipeline de Previsão Climática com Dados Espaciais
 
 > **FIAP · Global Solution 2026 · AI for RPA (1º Semestre)**  
 > Tema: Sistemas de Previsão Climática e Prevenção de Desastres Naturais com Base em Dados Espaciais
@@ -7,7 +7,7 @@
 
 ## Sobre o Projeto
 
-O **SENTINEL** é um pipeline automatizado de ponta a ponta que simula o processamento de dados de sensoriamento remoto de satélites (Sentinel-2, Landsat-9, GOES-16) para detectar anomalias climáticas e classificar riscos de desastres naturais com inteligência artificial.
+O **OVERWATCH** é um pipeline automatizado de ponta a ponta que simula o processamento de dados de sensoriamento remoto de satélites (Sentinel-2, Landsat-9, GOES-16) para detectar anomalias climáticas e classificar riscos de desastres naturais com inteligência artificial.
 
 ### Tópicos integrados (critério obrigatório)
 | Tópico | Como aparece no projeto |
@@ -61,8 +61,8 @@ CSV Satelital (simulado)
 
 ```bash
 # Clone o repositório
-git clone https://github.com/MatheusMikio12/GS---RPA---SENTINEL.git
-cd GS---RPA---SENTINEL
+git clone https://github.com/MatheusMikio12/GS---RPA---OVERWATCH.git
+cd GS---RPA---OVERWATCH
 
 # Crie e ative o ambiente virtual
 python -m venv venv
@@ -95,14 +95,14 @@ python pipeline.py --sem-ia
 python pipeline.py --max-alertas 5
 ```
 
-O relatório será gerado em `outputs/relatorio_sentinel.xlsx`.
+O relatório será gerado em `outputs/relatorio_overwatch.xlsx`.
 
 ---
 
 ## Estrutura de Arquivos
 
 ```
-sentinel/
+overwatch/
 ├── modulo1_gerador.py          # Simulação de dados satelitais
 ├── modulo2_ingestao.py         # Ingestão, validação e normalização
 ├── modulo3_anomalias.py        # Detecção de anomalias (Isolation Forest)

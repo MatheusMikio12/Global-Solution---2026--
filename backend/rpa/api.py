@@ -1,5 +1,5 @@
 """
-SENTINEL — API REST (FastAPI)
+OVERWATCH — API REST (FastAPI)
 Expõe o pipeline como endpoints prontos para consumo pelo front-end.
 
 Instalação:  pip install fastapi uvicorn
@@ -31,7 +31,7 @@ import config
 # ── App ───────────────────────────────────────────────────────────────────────
 
 app = FastAPI(
-    title="SENTINEL API",
+    title="OVERWATCH API",
     description="Pipeline de Previsão Climática com Dados Espaciais — FIAP GS 2026",
     version="1.0.0",
 )
@@ -198,7 +198,7 @@ def serie_temporal(regiao: Optional[str] = Query(None, description="Filtrar por 
 
 if __name__ == "__main__":
     print("=" * 55)
-    print("  🛰️  SENTINEL API — iniciando servidor")
+    print("  🛰️  OVERWATCH API — iniciando servidor")
     print(f"  http://{config.API_HOST}:{config.API_PORT}")
     print(f"  Docs: http://localhost:{config.API_PORT}/docs")
     print("=" * 55)

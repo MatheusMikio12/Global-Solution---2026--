@@ -1,5 +1,5 @@
 """
-SENTINEL — Módulo 3: Detecção de Anomalias Climáticas com ML
+OVERWATCH — Módulo 3: Detecção de Anomalias Climáticas com ML
 """
 
 import pandas as pd

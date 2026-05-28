@@ -1,5 +1,5 @@
 """
-SENTINEL · Quantum API (FastAPI)
+OVERWATCH · Quantum API (FastAPI)
 Classifica eventos climáticos extremos usando modelos QML
 treinados com dados reais NASA POWER v2.9.2.
 
@@ -27,7 +27,7 @@ N_QUBITS  = 3
 FEATURES  = ["T2M", "PRECTOTCORR", "WS10M", "RH2M", "ALLSKY_SFC_LW_DWN"]
 
 app = FastAPI(
-    title="SENTINEL · Quantum API",
+    title="OVERWATCH · Quantum API",
     description="QML para classificação de eventos climáticos extremos — NASA POWER",
     version="1.0.0",
 )
@@ -356,7 +356,7 @@ def buscar_e_prever(params: EntradaNASA):
 
 if __name__ == "__main__":
     print("=" * 55)
-    print("  ⚛️  SENTINEL Quantum API — iniciando")
+    print("  ⚛️  OVERWATCH Quantum API — iniciando")
     print("  http://0.0.0.0:8001")
     print("  Docs: http://localhost:8001/docs")
     print("=" * 55)

@@ -1,5 +1,5 @@
 """
-SENTINEL — Módulo 1: Gerador de Dados Climáticos Satelitais
+OVERWATCH — Módulo 1: Gerador de Dados Climáticos Satelitais
 Simula leituras de sensores de satélites como Landsat, Sentinel-2 e GOES.
 """
 

@@ -1,5 +1,5 @@
 """
-SENTINEL — Módulo 4: Classificação de Riscos Climáticos com IA (Google Gemini API)
+OVERWATCH — Módulo 4: Classificação de Riscos Climáticos com IA (Google Gemini API)
 """
 
 import json

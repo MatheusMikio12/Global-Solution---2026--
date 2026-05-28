@@ -1,5 +1,5 @@
 """
-SENTINEL — Módulo 5: Geração de Relatório Excel Automatizado
+OVERWATCH — Módulo 5: Geração de Relatório Excel Automatizado
 Produz um relatório estruturado com 4 abas:
   1. Painel Executivo — métricas gerais da missão de monitoramento
   2. Alertas Críticos  — anomalias classificadas pela IA, ordenadas por severidade
@@ -70,7 +70,7 @@ def _aba_painel(wb, df):
 
     # Título
     ws.merge_cells("A1:F1")
-    ws["A1"] = "🛰️  SENTINEL — Relatório de Monitoramento Climático Espacial"
+    ws["A1"] = "🛰️  OVERWATCH — Relatório de Monitoramento Climático Espacial"
     ws["A1"].font      = Font(bold=True, size=16, color=COR_HEADER)
     ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[1].height = 36
@@ -235,7 +235,7 @@ def _aba_estatisticas(wb, df):
 
 # ── Função principal ────────────────────────────────────────────────────────
 
-def gerar_relatorio(df: pd.DataFrame, caminho: str = "outputs/relatorio_sentinel.xlsx"):
+def gerar_relatorio(df: pd.DataFrame, caminho: str = "outputs/relatorio_overwatch.xlsx"):
     os.makedirs("outputs", exist_ok=True)
 
     wb = openpyxl.Workbook()

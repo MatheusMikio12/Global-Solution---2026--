@@ -73,7 +73,7 @@ export default function App() {
       <header>
         <div className="header-inner">
           <div className="header-brand">
-            <span className="logo">🛰️ SENTINEL</span>
+            <span className="logo">🛰️ OVERWATCH</span>
             <span className="tagline">Pipeline de Previsão Climática Espacial · FIAP GS 2026</span>
           </div>
           <div className="header-right">
@@ -113,7 +113,7 @@ export default function App() {
         {!['dashboard', 'rpa'].includes(activeTab) && <TabPlaceholder tab={TABS.find(t => t.id === activeTab)} />}
       </main>
 
-      <footer>SENTINEL · FIAP Global Solution 2026</footer>
+      <footer>OVERWATCH · FIAP Global Solution 2026</footer>
     </div>
   )
 }

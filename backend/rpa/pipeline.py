@@ -1,5 +1,5 @@
 """
-SENTINEL — Pipeline Principal
+OVERWATCH — Pipeline Principal
 Orquestra todos os módulos do pipeline de ponta a ponta.
 
 Uso:
@@ -26,7 +26,7 @@ def verificar_chave_api():
 
 
 def main():
-    parser = argparse.ArgumentParser(description="SENTINEL — Pipeline Climático Espacial")
+    parser = argparse.ArgumentParser(description="OVERWATCH — Pipeline Climático Espacial")
     parser.add_argument("--sem-ia",      action="store_true",  help="Pula classificação com IA")
     parser.add_argument("--max-alertas", type=int, default=config.MAX_ALERTAS_POR_REGIAO,
                         help=f"Máximo de alertas por região (padrão: {config.MAX_ALERTAS_POR_REGIAO})")
@@ -37,7 +37,7 @@ def main():
 
     inicio = time.time()
     print("=" * 55)
-    print("  🛰️  SENTINEL — Pipeline Climático Espacial")
+    print("  🛰️  OVERWATCH — Pipeline Climático Espacial")
     print("  FIAP · Global Solution 2026 · AI for RPA")
     print("=" * 55)
 
