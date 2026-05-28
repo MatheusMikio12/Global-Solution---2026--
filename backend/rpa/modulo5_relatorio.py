@@ -63,6 +63,9 @@ def _aba_painel(wb, df):
     ws.sheet_properties.tabColor = COR_DESTAQUE
 
     anomalos    = df[df["anomalia"] == "anomalia"]
+    # Inicializa coluna se não existir (quando IA é pulada)
+    if "tipo_desastre" not in df.columns:
+        df["tipo_desastre"] = None
     classificados = df[df["tipo_desastre"].notna()]
 
     # Título
@@ -82,7 +85,7 @@ def _aba_painel(wb, df):
         ("Total de Leituras",       len(df),                              COR_DESTAQUE),
         ("Anomalias Detectadas",    len(anomalos),                        COR_ALTO),
         ("Taxa de Anomalia (%)",    f"{len(anomalos)/len(df)*100:.1f}%",  COR_ALTO),
-        ("Alertas Críticos",        len(anomalos[anomalos["severidade"] == "crítica"]) if "severidade" in df.columns else "N/A", COR_CRITICO),
+        ("Alertas Críticos",        len(anomalos[anomalos["severidade"] == "crítica"]) if "severidade" in df.columns and len(anomalos) > 0 else "N/A", COR_CRITICO),
         ("Regiões Monitoradas",     df["regiao"].nunique(),               COR_DESTAQUE),
         ("Satélites Utilizados",    df["satelite"].nunique(),             COR_DESTAQUE),
     ]
@@ -125,6 +128,12 @@ def _aba_painel(wb, df):
 def _aba_alertas(wb, df):
     ws = wb.create_sheet("🚨 Alertas Críticos")
     ws.sheet_properties.tabColor = COR_CRITICO
+
+    # Inicializa colunas se não existirem (quando IA é pulada)
+    if "tipo_desastre" not in df.columns:
+        df["tipo_desastre"] = None
+    if "severidade" not in df.columns:
+        df["severidade"] = None
 
     alertas = df[df["tipo_desastre"].notna()].copy()
     alertas["_ord"] = alertas["severidade"].map(ORDEM_SEVERIDADE)
