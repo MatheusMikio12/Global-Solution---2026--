@@ -1,0 +1,21 @@
+# Ambiente Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+.venv/
+env/
+
+# Dados gerados e outputs (não versionar dados brutos)
+data/
+outputs/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
