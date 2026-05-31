@@ -5,6 +5,7 @@
 
 const API_BASE_URL     = import.meta.env.VITE_API_BASE_URL     || "http://localhost:8000";
 const QUANTUM_API_URL  = import.meta.env.VITE_QUANTUM_API_URL  || "http://localhost:8001";
+const VISION_API_URL   = import.meta.env.VITE_VISION_API_URL   || "http://localhost:8002";
 
 class APIService {
   /**
@@ -185,6 +186,37 @@ class APIService {
 
   static downloadRelatorioUrl() {
     return `${API_BASE_URL}/resultados/download-relatorio`;
+  }
+
+  // ==================== ENDPOINTS VISÃO COMPUTACIONAL (porta 8002) ====================
+
+  static async visaoRequest(endpoint, options = {}) {
+    const url = `${VISION_API_URL}${endpoint}`;
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error("Vision API Error:", error);
+      throw error;
+    }
+  }
+
+  static visaoStatus() {
+    return this.visaoRequest("/visao/status", { method: "GET" });
+  }
+
+  static visaoInfo() {
+    return this.visaoRequest("/visao/info", { method: "GET" });
+  }
+
+  static visaoPrever(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    return this.visaoRequest("/visao/prever", {
+      method: "POST",
+      body: formData,
+    });
   }
 }
 

@@ -273,7 +273,8 @@ export default function App() {
           />
         )}
         {activeTab === 'quantica' && <TabQuantica />}
-        {!['dashboard', 'rpa', 'quantica'].includes(activeTab) && (
+        {activeTab === 'visao' && <TabVisao />}
+        {!['dashboard', 'rpa', 'quantica', 'visao'].includes(activeTab) && (
           <TabPlaceholder tab={TABS.find(t => t.id === activeTab)} />
         )}
       </main>
@@ -894,6 +895,195 @@ function QField({ label, unit, desc, value, onChange }) {
       <span className="q-desc">{desc}</span>
       <input type="number" step="any" value={value}
         onChange={e => onChange(e.target.value)} className="q-input" required />
+    </div>
+  )
+}
+
+// ── Tab: Visão Computacional ──────────────────────────────────────────────────
+function TabVisao() {
+  const [vOnline,    setVOnline]    = useState(false)
+  const [vStatus,    setVStatus]    = useState(null)
+  const [vInfo,      setVInfo]      = useState(null)
+  const [file,       setFile]       = useState(null)
+  const [preview,    setPreview]    = useState(null)
+  const [loading,    setLoading]    = useState(false)
+  const [resultado,  setResultado]  = useState(null)
+  const [erro,       setErro]       = useState(null)
+  const [dragOver,   setDragOver]   = useState(false)
+  const inputRef = useRef(null)
+
+  useEffect(() => {
+    APIService.visaoStatus()
+      .then(d => { setVStatus(d); setVOnline(true) })
+      .catch(() => { setVOnline(false); setVStatus(null) })
+    APIService.visaoInfo().then(setVInfo).catch(() => {})
+  }, [])
+
+  const selecionar = (f) => {
+    if (!f) return
+    if (!f.type.startsWith('image/')) { setErro('O arquivo precisa ser uma imagem (JPG/PNG).'); return }
+    setErro(null); setResultado(null)
+    setFile(f)
+    setPreview(URL.createObjectURL(f))
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault(); setDragOver(false)
+    selecionar(e.dataTransfer.files?.[0])
+  }
+
+  const analisar = async () => {
+    if (!file) return
+    setErro(null); setLoading(true); setResultado(null)
+    try {
+      setResultado(await APIService.visaoPrever(file))
+    } catch {
+      setErro('Erro ao chamar a API de visão. Inicie com: cd backend/visao-computacional && python api.py')
+    } finally { setLoading(false) }
+  }
+
+  const isFogo = resultado?.incendio
+  const pct = resultado ? Math.round(resultado.probabilidade_fogo * 100) : 0
+
+  return (
+    <div>
+      {/* Status */}
+      <section className="card">
+        <h2 className="section-title">Status da API de Visão Computacional</h2>
+        <div className="status-row">
+          <span className={`api-badge ${vOnline ? 'online' : 'offline'}`}>
+            {vOnline ? '● Online' : '○ Offline'}
+          </span>
+          {vStatus && <>
+            <span className="label">Modelo: {vStatus.modelo}</span>
+            {vStatus.arquivo && <span className="label">Arquivo: {vStatus.arquivo}</span>}
+          </>}
+        </div>
+        {!vOnline && (
+          <div className="alert-box error" style={{ marginTop: '1rem' }}>
+            Backend offline. Inicie com: <code>cd backend/visao-computacional && python api.py</code>
+          </div>
+        )}
+      </section>
+
+      {/* Upload + análise */}
+      <section className="card" style={{ marginTop: '1.5rem' }}>
+        <h2 className="section-title">Detectar Incêndio em Imagem</h2>
+        <p className="label" style={{ marginBottom: '1.25rem' }}>
+          Envie uma imagem aérea ou de satélite. A CNN <strong>MobileNetV2</strong> classifica
+          a cena como <strong>Incêndio Detectado</strong> ou <strong>Sem Incêndio</strong>.
+        </p>
+
+        <div className="cv-layout">
+          <div
+            className={`cv-dropzone ${dragOver ? 'dragover' : ''} ${preview ? 'has-img' : ''}`}
+            onClick={() => inputRef.current?.click()}
+            onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}
+          >
+            {preview ? (
+              <img src={preview} alt="pré-visualização" className="cv-preview" />
+            ) : (
+              <>
+                <span className="cv-drop-icon">🖼️</span>
+                <span className="cv-drop-text">Clique ou arraste uma imagem aqui</span>
+                <span className="cv-drop-hint">JPG / PNG · redimensionada para 160×160</span>
+              </>
+            )}
+            <input ref={inputRef} type="file" accept="image/*" hidden
+              onChange={e => selecionar(e.target.files?.[0])} />
+          </div>
+
+          <div className="cv-actions">
+            {file && <span className="label" style={{ fontSize: '0.78rem' }}>📎 {file.name}</span>}
+            <button className="btn-run" onClick={analisar} disabled={loading || !file || !vOnline}>
+              {loading ? '⏳ Analisando...' : '👁️ Analisar Imagem'}
+            </button>
+            {(file || resultado) && (
+              <button className="btn-clear" onClick={() => {
+                setFile(null); setPreview(null); setResultado(null); setErro(null)
+                if (inputRef.current) inputRef.current.value = ''
+              }}>Limpar</button>
+            )}
+          </div>
+        </div>
+
+        {erro && <div className="alert-box error">{erro}</div>}
+
+        {resultado && (
+          <div style={{ marginTop: '1.75rem' }}>
+            <h3 className="section-title">Resultado da Detecção</h3>
+            <div className={`cv-result ${isFogo ? 'fogo' : 'seguro'}`}>
+              <div className="cv-result-badge">
+                <span className="cv-result-icon">{isFogo ? '🔥' : '✅'}</span>
+                <span>{resultado.label}</span>
+              </div>
+              <div className="cv-result-meta">
+                <div className="cv-bar-wrap">
+                  <div className="cv-bar-label">
+                    <span>Probabilidade de incêndio</span>
+                    <strong>{pct}%</strong>
+                  </div>
+                  <div className="cv-bar-track">
+                    <div className="cv-bar-fill" style={{
+                      width: `${pct}%`,
+                      background: isFogo ? '#ff3f3f' : '#27ae60',
+                    }} />
+                  </div>
+                </div>
+                <div className="cv-stats">
+                  <span>Confiança: <strong>{(resultado.confianca * 100).toFixed(1)}%</strong></span>
+                  <span>Threshold: <strong>{resultado.threshold}</strong></span>
+                  <span>Arquivo: <strong>{resultado.arquivo}</strong> ({resultado.tamanho_kb} KB)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Info do modelo */}
+      {vInfo && (
+        <section className="card" style={{ marginTop: '1.5rem' }}>
+          <h2 className="section-title">Arquitetura do Modelo</h2>
+          <div className="table-wrapper">
+            <table>
+              <tbody>
+                <tr><td><strong>Modelo</strong></td><td>{vInfo.modelo?.nome}</td></tr>
+                <tr><td><strong>Tipo</strong></td><td>{vInfo.modelo?.tipo}</td></tr>
+                <tr><td><strong>Entrada</strong></td><td>{vInfo.modelo?.input}</td></tr>
+                <tr><td><strong>Saída</strong></td><td>{vInfo.modelo?.saida}</td></tr>
+                <tr><td><strong>Backbone</strong></td><td>{vInfo.modelo?.backbone}</td></tr>
+                <tr><td><strong>Cabeça</strong></td><td>{vInfo.modelo?.cabeca}</td></tr>
+                <tr><td><strong>Pré-processamento</strong></td><td>{vInfo.modelo?.preprocessamento}</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          {vInfo.metricas_teste && (
+            <div className="kpi-grid" style={{ marginTop: '1.25rem' }}>
+              <KPI label="Acurácia (teste)"    value={vInfo.metricas_teste.acuracia}              color="#00ff9d" />
+              <KPI label="AUC"                  value={vInfo.metricas_teste.auc}                  color="#00f2ff" />
+              <KPI label="F1 (incêndio)"        value={vInfo.metricas_teste.f1_wildfire}          color="#00f2ff" />
+              <KPI label="Recall (incêndio)"    value={vInfo.metricas_teste.recall_wildfire}      color="#ff9042" />
+            </div>
+          )}
+          {vInfo.dataset && (
+            <p className="label" style={{ marginTop: '0.75rem', fontSize: '0.77rem' }}>
+              📦 Dataset: {vInfo.dataset.nome} · {vInfo.dataset.imagens} · splits {vInfo.dataset.splits}
+            </p>
+          )}
+          {vInfo.metricas_teste?.obs && (
+            <p className="label" style={{ marginTop: '0.4rem', fontSize: '0.77rem', lineHeight: 1.6 }}>
+              ⚠️ {vInfo.metricas_teste.obs}
+            </p>
+          )}
+          <p className="label" style={{ marginTop: '0.4rem', fontSize: '0.77rem', lineHeight: 1.7 }}>
+            🛰️ {vInfo.aplicacao}
+          </p>
+        </section>
+      )}
     </div>
   )
 }
