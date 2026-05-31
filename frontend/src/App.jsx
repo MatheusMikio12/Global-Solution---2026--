@@ -6,14 +6,14 @@ import {
 import APIService from './services/api'
 
 const TABS = [
-  { id: 'dashboard',  icon: '🛰️',  label: 'Dashboard',    subject: 'Visão Geral do Projeto' },
-  { id: 'rpa',        icon: '🤖',  label: 'RPA',          subject: 'AI for Robotic Process Automation' },
-  { id: 'generative', icon: '✨',  label: 'Generative AI', subject: 'Generative AI e Advanced Nets' },
-  { id: 'pln',        icon: '💬',  label: 'PLN',          subject: 'PLN, Chatbots & Virtual Agents' },
-  { id: 'visao',      icon: '👁️',  label: 'Visão Comp.',  subject: 'Visão Computacional' },
-  { id: 'iot',        icon: '📡',  label: 'IoT',          subject: 'Physical Computing, Embedded AI & Cognitive IoT' },
-  { id: 'neuro',      icon: '🧠',  label: 'Neuromórfica', subject: 'Cluster Computing, Computação Neuromórfica e Supercomputadores' },
-  { id: 'quantica',   icon: '⚛️',  label: 'Quântica',     subject: 'Computação Quântica e IA' },
+  { id: 'dashboard',  label: 'Dashboard',    subject: 'Visão Geral do Projeto' },
+  { id: 'rpa',        label: 'RPA',          subject: 'AI for Robotic Process Automation' },
+  { id: 'generative', label: 'Generative AI', subject: 'Generative AI e Advanced Nets' },
+  { id: 'pln',        label: 'PLN',          subject: 'PLN, Chatbots & Virtual Agents' },
+  { id: 'visao',      label: 'Visão Comp.',  subject: 'Visão Computacional' },
+  { id: 'iot',        label: 'IoT',          subject: 'Physical Computing, Embedded AI & Cognitive IoT' },
+  { id: 'neuro',      label: 'Neuromórfica', subject: 'Cluster Computing, Computação Neuromórfica e Supercomputadores' },
+  { id: 'quantica',   label: 'Quântica',     subject: 'Computação Quântica e IA' },
 ]
 
 const SEV_COLOR = { critica: '#C0392B', alta: '#E67E22', media: '#F1C40F', baixa: '#27AE60' }
@@ -24,41 +24,41 @@ const PLACEHOLDER_CONTENT = {
   generative: {
     intro: 'Modelos generativos transformam dados climáticos brutos em linguagem natural, imagens sintéticas e relatórios automáticos de missão.',
     cards: [
-      { icon: '📝', titulo: 'Classificação Gemini 1.5', desc: 'O Módulo 4 do OVERWATCH usa Gemini 1.5 Flash com structured output para classificar cada anomalia em tipo de desastre, severidade (crítica/alta/média/baixa) e recomendação de ação.' },
-      { icon: '🖼️', titulo: 'Imagens Satélite Sintéticas', desc: 'GANs condicionais (StyleGAN3) geram imagens multiespectrais de satélite para regiões com alta cobertura de nuvens, aumentando datasets de segmentação.' },
-      { icon: '🌐', titulo: 'Boletins Climáticos', desc: 'RAG (Retrieval-Augmented Generation) conecta o banco de alertas do OVERWATCH a um LLM para redigir boletins de emergência personalizados por região.' },
+      { titulo: 'Classificação Gemini 1.5', desc: 'O Módulo 4 do OVERWATCH usa Gemini 1.5 Flash com structured output para classificar cada anomalia em tipo de desastre, severidade (crítica/alta/média/baixa) e recomendação de ação.' },
+      { titulo: 'Imagens Satélite Sintéticas', desc: 'GANs condicionais (StyleGAN3) geram imagens multiespectrais de satélite para regiões com alta cobertura de nuvens, aumentando datasets de segmentação.' },
+      { titulo: 'Boletins Climáticos', desc: 'RAG (Retrieval-Augmented Generation) conecta o banco de alertas do OVERWATCH a um LLM para redigir boletins de emergência personalizados por região.' },
     ],
   },
   pln: {
     intro: 'NLP extrai conhecimento de relatórios meteorológicos, comunicados de defesa civil e redes sociais para enriquecer os alertas gerados pelo pipeline.',
     cards: [
-      { icon: '🔍', titulo: 'NER em Notícias de Desastres', desc: 'BERTimbau extrai entidades nomeadas (localização, data, tipo de evento) de notícias sobre desastres climáticos brasileiros, validando predições do Isolation Forest.' },
-      { icon: '😰', titulo: 'Monitoramento Social', desc: 'Análise de sentimento em tempo real em tweets detecta pânico climático regional antes dos alertas oficiais, usando RoBERTa-Twitter com janela de 30 min.' },
-      { icon: '🤖', titulo: 'Chatbot de Alertas', desc: 'Agente conversacional (Gemini + webhooks FastAPI) responde perguntas em linguagem natural sobre alertas ativos: "Qual a situação do Caribe agora?" → consulta direta ao OVERWATCH API.' },
+      { titulo: 'NER em Notícias de Desastres', desc: 'BERTimbau extrai entidades nomeadas (localização, data, tipo de evento) de notícias sobre desastres climáticos brasileiros, validando predições do Isolation Forest.' },
+      { titulo: 'Monitoramento Social', desc: 'Análise de sentimento em tempo real em tweets detecta pânico climático regional antes dos alertas oficiais, usando RoBERTa-Twitter com janela de 30 min.' },
+      { titulo: 'Chatbot de Alertas', desc: 'Agente conversacional (Gemini + webhooks FastAPI) responde perguntas em linguagem natural sobre alertas ativos: "Qual a situação do Caribe agora?" → consulta direta ao OVERWATCH API.' },
     ],
   },
   visao: {
     intro: 'CNNs e modelos de segmentação analisam imagens multiespectrais de Sentinel-2 e GOES-16 para detecção automática de incêndios, enchentes e desmatamento.',
     cards: [
-      { icon: '🔥', titulo: 'Detecção de Incêndios', desc: 'YOLOv8 treinado em imagens GOES-16 banda 7 (infravermelho) detecta pontos de calor em < 100ms por tile de 512×512px, com threshold calibrado por bioma.' },
-      { icon: '🌊', titulo: 'Segmentação de Enchentes', desc: 'U-Net com imagens SAR Sentinel-1 segmenta áreas inundadas independentemente de cobertura de nuvens — única opção viável no Brasil em época de monções.' },
-      { icon: '🌿', titulo: 'Previsão de NDVI', desc: 'O OVERWATCH já calcula NDVI por sensor. ConvLSTM prevê NDVI futuro a partir de sequências temporais de 30 dias, antecipando condições de seca ou recuperação florestal.' },
+      { titulo: 'Detecção de Incêndios', desc: 'YOLOv8 treinado em imagens GOES-16 banda 7 (infravermelho) detecta pontos de calor em < 100ms por tile de 512×512px, com threshold calibrado por bioma.' },
+      { titulo: 'Segmentação de Enchentes', desc: 'U-Net com imagens SAR Sentinel-1 segmenta áreas inundadas independentemente de cobertura de nuvens — única opção viável no Brasil em época de monções.' },
+      { titulo: 'Previsão de NDVI', desc: 'O OVERWATCH já calcula NDVI por sensor. ConvLSTM prevê NDVI futuro a partir de sequências temporais de 30 dias, antecipando condições de seca ou recuperação florestal.' },
     ],
   },
   iot: {
     intro: 'Sensores embarcados e edge AI complementam satélites com dados hiperlocais em tempo real, fechando o ciclo de observação terrestre-orbital.',
     cards: [
-      { icon: '🌡️', titulo: 'Estações IoT Meteorológicas', desc: 'ESP32 + BME680 (temperatura, umidade, pressão, VOC) transmitem via MQTT a cada 10 min. Dados são ingeridos pelo Módulo 2 do pipeline, expandindo além dos 6 satélites simulados.' },
-      { icon: '⚡', titulo: 'Edge AI para Anomalias', desc: 'TensorFlow Lite roda Isolation Forest quantizado (INT8) no microcontrolador. Anomalias são detectadas localmente sem latência de rede, transmitindo apenas alertas — economia de 95% de banda.' },
-      { icon: '🛸', titulo: 'Fusão Terrestre-Orbital', desc: 'Kalman Filter combina leituras IoT de solo com dados satelitais, reduzindo incerteza de temperatura de ±3°C para ±0.8°C nas regiões com cobertura de estações.' },
+      { titulo: 'Estações IoT Meteorológicas', desc: 'ESP32 + BME680 (temperatura, umidade, pressão, VOC) transmitem via MQTT a cada 10 min. Dados são ingeridos pelo Módulo 2 do pipeline, expandindo além dos 6 satélites simulados.' },
+      { titulo: 'Edge AI para Anomalias', desc: 'TensorFlow Lite roda Isolation Forest quantizado (INT8) no microcontrolador. Anomalias são detectadas localmente sem latência de rede, transmitindo apenas alertas — economia de 95% de banda.' },
+      { titulo: 'Fusão Terrestre-Orbital', desc: 'Kalman Filter combina leituras IoT de solo com dados satelitais, reduzindo incerteza de temperatura de ±3°C para ±0.8°C nas regiões com cobertura de estações.' },
     ],
   },
   neuro: {
     intro: 'Chips neuromórficos e computação distribuída processam streams satelitais em tempo real com consumo de energia ordens de grandeza menor que GPUs convencionais.',
     cards: [
-      { icon: '⚡', titulo: 'Spiking Neural Networks', desc: 'Intel Loihi 2 com framework Lava roda SNN para detecção de anomalias em streams GOES-16 com < 1W de consumo vs. 200W de GPUs — viável para satélites com energia solar limitada.' },
-      { icon: '🖥️', titulo: 'Cluster Spark Distribuído', desc: 'Apache Spark distribui o Módulo 3 (Isolation Forest) em cluster de 8 workers, reduzindo o tempo de treinamento sobre 2.592 registros de 45s para 4s — escala para 100× mais dados.' },
-      { icon: '🌌', titulo: 'HPC para Simulação WRF', desc: 'Supercomputadores como o SDumont (LNCC) rodam modelo WRF a 1km de resolução para previsão regional, alimentando o OVERWATCH com dados de alta fidelidade como entrada do Módulo 1.' },
+      { titulo: 'Spiking Neural Networks', desc: 'Intel Loihi 2 com framework Lava roda SNN para detecção de anomalias em streams GOES-16 com < 1W de consumo vs. 200W de GPUs — viável para satélites com energia solar limitada.' },
+      { titulo: 'Cluster Spark Distribuído', desc: 'Apache Spark distribui o Módulo 3 (Isolation Forest) em cluster de 8 workers, reduzindo o tempo de treinamento sobre 2.592 registros de 45s para 4s — escala para 100× mais dados.' },
+      { titulo: 'HPC para Simulação WRF', desc: 'Supercomputadores como o SDumont (LNCC) rodam modelo WRF a 1km de resolução para previsão regional, alimentando o OVERWATCH com dados de alta fidelidade como entrada do Módulo 1.' },
     ],
   },
 }
@@ -189,9 +189,9 @@ export default function App() {
     if (prev === 'running' && curr === 'done') {
       const elapsed = startTime.current
         ? Math.round((Date.now() - startTime.current) / 1000) : null
-      setToast({ msg: `✅ Pipeline concluído${elapsed ? ` em ${elapsed}s` : ''}!`, type: 'success' })
+      setToast({ msg: `Pipeline concluído${elapsed ? ` em ${elapsed}s` : ''}!`, type: 'success' })
     } else if (prev === 'running' && curr === 'error') {
-      setToast({ msg: '❌ Pipeline falhou. Verifique o log de erros.', type: 'error' })
+      setToast({ msg: 'Pipeline falhou. Verifique o log de erros.', type: 'error' })
     }
     prevStatus.current = curr
   }, [status?.pipeline])
@@ -223,7 +223,7 @@ export default function App() {
       <header>
         <div className="header-inner">
           <div className="header-brand">
-            <span className="logo">🛰️ OVERWATCH</span>
+            <span className="logo">OVERWATCH</span>
             <span className="tagline">Pipeline de Previsão Climática Espacial · FIAP GS 2026</span>
           </div>
           <div className="header-right">
@@ -243,7 +243,6 @@ export default function App() {
             <button key={t.id}
               className={`tab-btn ${activeTab === t.id ? 'active' : ''}`}
               onClick={() => setActiveTab(t.id)} title={t.subject}>
-              <span>{t.icon}</span>
               <span>{t.label}</span>
             </button>
           ))}
@@ -252,7 +251,7 @@ export default function App() {
 
       <main>
         <div className="subject-label">
-          📚 {TABS.find(t => t.id === activeTab)?.subject}
+          {TABS.find(t => t.id === activeTab)?.subject}
         </div>
 
         {activeTab === 'dashboard' && (
@@ -313,7 +312,7 @@ function TabDashboard({
                 target="_blank" rel="noreferrer"
                 className="btn-download"
               >
-                ⬇ Baixar Excel
+                Baixar Excel
               </a>
             </div>
             <div className="kpi-grid" style={{ marginTop: '1.25rem' }}>
@@ -326,7 +325,7 @@ function TabDashboard({
               <KPI label="Satélites Utilizados" value={resumo.satelites_utilizados} color="#2980B9" />
             </div>
             <p className="period-info">
-              📅 Período: {resumo.periodo_inicio?.slice(0, 10)} → {resumo.periodo_fim?.slice(0, 10)}
+              Período: {resumo.periodo_inicio?.slice(0, 10)} → {resumo.periodo_fim?.slice(0, 10)}
             </p>
           </section>
 
@@ -435,12 +434,11 @@ function TabDashboard({
         </>
       ) : (
         <div className="empty-state">
-          <div className="empty-icon">🛰️</div>
           <p>Nenhum resultado disponível ainda.</p>
-          <p>Vá até a aba <strong>RPA</strong> e clique em <strong>▶ Rodar Pipeline</strong>.</p>
+          <p>Vá até a aba <strong>RPA</strong> e clique em <strong>Rodar Pipeline</strong>.</p>
           {!apiOnline && (
             <p className="warn">
-              ⚠️ Backend offline. Inicie com:<br />
+              Backend offline. Inicie com:<br />
               <code>cd backend/rpa && python api.py</code>
             </p>
           )}
@@ -477,7 +475,7 @@ function TabRPA({ status, apiOnline, pipelineStatus, loading, usarIa, setUsarIa,
           </div>
           {status?.ia_disponivel != null && (
             <span className="label">
-              Gemini: {status.ia_disponivel ? '✅ Configurada' : '⚠️ Sem GOOGLE_API_KEY'}
+              Gemini: {status.ia_disponivel ? 'Configurada' : 'Sem GOOGLE_API_KEY'}
             </span>
           )}
           {status?.concluido_em && (
@@ -508,7 +506,7 @@ function TabRPA({ status, apiOnline, pipelineStatus, loading, usarIa, setUsarIa,
           </label>
           <button className="btn-run" onClick={rodarPipeline}
             disabled={loading || pipelineStatus === 'running' || !apiOnline}>
-            {pipelineStatus === 'running' ? '⏳ Executando...' : '▶ Rodar Pipeline'}
+            {pipelineStatus === 'running' ? 'Executando...' : 'Rodar Pipeline'}
           </button>
         </div>
 
@@ -667,7 +665,7 @@ function TabQuantica() {
           </div>
           <button type="submit" className="btn-run" style={{ marginTop: '1.25rem' }}
             disabled={loadingPrever || !qOnline}>
-            {loadingPrever ? '⏳ Classificando...' : '⚛️ Classificar com QML'}
+            {loadingPrever ? 'Classificando...' : 'Classificar com QML'}
           </button>
         </form>
 
@@ -763,7 +761,7 @@ function TabQuantica() {
           </div>
           <button type="submit" className="btn-run" style={{ marginTop: '1.25rem' }}
             disabled={nasaLoading || !qOnline}>
-            {nasaLoading ? '⏳ Consultando NASA...' : '🌍 Buscar e Classificar'}
+            {nasaLoading ? 'Consultando NASA...' : 'Buscar e Classificar'}
           </button>
         </form>
 
@@ -772,11 +770,11 @@ function TabQuantica() {
         {nasaResult && (
           <div style={{ marginTop: '1.75rem' }}>
             <div className="nasa-summary">
-              <span className="nasa-stat">📍 {nasaResult.local}</span>
-              <span className="nasa-stat">📅 {nasaResult.periodo}</span>
-              <span className="nasa-stat">📊 {nasaResult.total} dias</span>
+              <span className="nasa-stat">{nasaResult.local}</span>
+              <span className="nasa-stat">{nasaResult.periodo}</span>
+              <span className="nasa-stat">{nasaResult.total} dias</span>
               <span className="nasa-stat nasa-extremo-stat">
-                🔴 {nasaResult.extremos} extremos ({nasaResult.taxa_pct}%)
+                {nasaResult.extremos} extremos ({nasaResult.taxa_pct}%)
               </span>
             </div>
 
@@ -879,7 +877,7 @@ function TabQuantica() {
           )}
           {qModelos.diagnostico_nisq && (
             <p className="label" style={{ marginTop: '0.5rem', fontSize: '0.77rem', lineHeight: 1.6 }}>
-              ⚠️ {qModelos.diagnostico_nisq}
+              {qModelos.diagnostico_nisq}
             </p>
           )}
         </section>
@@ -986,7 +984,6 @@ function TabVisao() {
               <img src={preview} alt="pré-visualização" className="cv-preview" />
             ) : (
               <>
-                <span className="cv-drop-icon">🖼️</span>
                 <span className="cv-drop-text">Clique ou arraste uma imagem aqui</span>
                 <span className="cv-drop-hint">JPG / PNG · redimensionada para 160×160</span>
               </>
@@ -996,9 +993,9 @@ function TabVisao() {
           </div>
 
           <div className="cv-actions">
-            {file && <span className="label" style={{ fontSize: '0.78rem' }}>📎 {file.name}</span>}
+            {file && <span className="label" style={{ fontSize: '0.78rem' }}>{file.name}</span>}
             <button className="btn-run" onClick={analisar} disabled={loading || !file || !vOnline}>
-              {loading ? '⏳ Analisando...' : '👁️ Analisar Imagem'}
+              {loading ? 'Analisando...' : 'Analisar Imagem'}
             </button>
             {(file || resultado) && (
               <button className="btn-clear" onClick={() => {
@@ -1016,7 +1013,6 @@ function TabVisao() {
             <h3 className="section-title">Resultado da Detecção</h3>
             <div className={`cv-result ${isFogo ? 'fogo' : 'seguro'}`}>
               <div className="cv-result-badge">
-                <span className="cv-result-icon">{isFogo ? '🔥' : '✅'}</span>
                 <span>{resultado.label}</span>
               </div>
               <div className="cv-result-meta">
@@ -1071,16 +1067,16 @@ function TabVisao() {
           )}
           {vInfo.dataset && (
             <p className="label" style={{ marginTop: '0.75rem', fontSize: '0.77rem' }}>
-              📦 Dataset: {vInfo.dataset.nome} · {vInfo.dataset.imagens} · splits {vInfo.dataset.splits}
+              Dataset: {vInfo.dataset.nome} · {vInfo.dataset.imagens} · splits {vInfo.dataset.splits}
             </p>
           )}
           {vInfo.metricas_teste?.obs && (
             <p className="label" style={{ marginTop: '0.4rem', fontSize: '0.77rem', lineHeight: 1.6 }}>
-              ⚠️ {vInfo.metricas_teste.obs}
+              {vInfo.metricas_teste.obs}
             </p>
           )}
           <p className="label" style={{ marginTop: '0.4rem', fontSize: '0.77rem', lineHeight: 1.7 }}>
-            🛰️ {vInfo.aplicacao}
+            {vInfo.aplicacao}
           </p>
         </section>
       )}
@@ -1093,7 +1089,6 @@ function TabPlaceholder({ tab }) {
   const content = PLACEHOLDER_CONTENT[tab?.id]
   if (!content) return (
     <div className="placeholder-tab">
-      <div className="placeholder-icon">{tab?.icon}</div>
       <h2>{tab?.label}</h2>
       <p>{tab?.subject}</p>
       <span className="placeholder-badge">Em construção</span>
@@ -1104,7 +1099,6 @@ function TabPlaceholder({ tab }) {
     <div>
       <section className="card">
         <div className="ph-hero">
-          <span className="ph-icon">{tab.icon}</span>
           <div>
             <h2 className="section-title" style={{ marginBottom: '0.5rem' }}>{tab.label}</h2>
             <p className="ph-intro">{content.intro}</p>
@@ -1115,7 +1109,6 @@ function TabPlaceholder({ tab }) {
       <div className="ph-cards-grid">
         {content.cards.map((c, i) => (
           <section key={i} className="card ph-card">
-            <div className="ph-card-icon">{c.icon}</div>
             <h3 className="ph-card-title">{c.titulo}</h3>
             <p className="ph-card-desc">{c.desc}</p>
           </section>
@@ -1124,7 +1117,7 @@ function TabPlaceholder({ tab }) {
 
       <section className="card" style={{ marginTop: '1.5rem' }}>
         <div className="ph-fiap-row">
-          <span className="ph-fiap-label">📚 Disciplina FIAP</span>
+          <span className="ph-fiap-label">Disciplina FIAP</span>
           <span className="ph-fiap-value">{tab.subject}</span>
         </div>
         <p className="label" style={{ marginTop: '1rem', fontSize: '0.77rem', lineHeight: 1.7 }}>
