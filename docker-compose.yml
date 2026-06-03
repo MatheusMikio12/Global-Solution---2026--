@@ -35,6 +35,22 @@ services:
       - app-network
     command: uvicorn api:app --host 0.0.0.0 --port 8001 --reload
 
+  # Backend GenAI / RAG — ORBITAL SENTINEL (Porta 8003)
+  backend-genai:
+    build:
+      context: ./backend/genai
+      dockerfile: Dockerfile
+    container_name: genai-api
+    ports:
+      - "8003:8003"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    volumes:
+      - ./backend/genai:/app
+    networks:
+      - app-network
+    command: uvicorn api:app --host 0.0.0.0 --port 8003 --reload
+
   # Frontend (Porta 3000)
   frontend:
     build:
@@ -45,6 +61,7 @@ services:
       - "3000:3000"
     environment:
       - REACT_APP_API_BASE_URL=http://localhost:8000
+      - VITE_GENAI_API_URL=http://localhost:8003
     volumes:
       - ./frontend/src:/app/src
     networks:

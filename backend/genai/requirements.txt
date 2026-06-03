@@ -1,0 +1,13 @@
+# GenAI — Assistente RAG (ORBITAL SENTINEL)
+# RAG: LlamaIndex + FastEmbed/ONNX (sem torch) + Groq LLM
+llama-index-core>=0.11.0
+llama-index-readers-file>=0.2.0
+llama-index-embeddings-fastembed>=0.2.0
+llama-index-llms-groq>=0.2.0
+fastembed>=0.3.0
+pypdf>=4.0.0
+
+# API REST
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9

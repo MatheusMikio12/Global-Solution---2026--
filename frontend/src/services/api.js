@@ -6,6 +6,7 @@
 const API_BASE_URL     = import.meta.env.VITE_API_BASE_URL     || "http://localhost:8000";
 const QUANTUM_API_URL  = import.meta.env.VITE_QUANTUM_API_URL  || "http://localhost:8001";
 const VISION_API_URL   = import.meta.env.VITE_VISION_API_URL   || "http://localhost:8002";
+const GENAI_API_URL    = import.meta.env.VITE_GENAI_API_URL    || "http://localhost:8003";
 
 class APIService {
   /**
@@ -216,6 +217,47 @@ class APIService {
     return this.visaoRequest("/visao/prever", {
       method: "POST",
       body: formData,
+    });
+  }
+
+  // ==================== ENDPOINTS GENERATIVE AI / RAG (porta 8003) ====================
+
+  static async genaiRequest(endpoint, options = {}) {
+    const url = `${GENAI_API_URL}${endpoint}`;
+    const config = {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    };
+    try {
+      const response = await fetch(url, config);
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error("GenAI API Error:", error);
+      throw error;
+    }
+  }
+
+  static genaiStatus() {
+    return this.genaiRequest("/genai/status", { method: "GET" });
+  }
+
+  static genaiInfo() {
+    return this.genaiRequest("/genai/info", { method: "GET" });
+  }
+
+  static genaiExemplos() {
+    return this.genaiRequest("/genai/exemplos", { method: "GET" });
+  }
+
+  static genaiInicializar() {
+    return this.genaiRequest("/genai/inicializar", { method: "POST" });
+  }
+
+  static genaiChat(mensagem) {
+    return this.genaiRequest("/genai/chat", {
+      method: "POST",
+      body: JSON.stringify({ mensagem }),
     });
   }
 }

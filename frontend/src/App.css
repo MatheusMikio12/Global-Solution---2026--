@@ -1194,3 +1194,118 @@ footer {
 }
 .cv-stats strong { color: var(--text); }
 
+/* ── Generative AI · Chat RAG (ORBITAL SENTINEL) ───────────────────────────── */
+.genai-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.1rem;
+}
+.genai-chip {
+  font-family: var(--data);
+  font-size: 0.74rem;
+  color: var(--text);
+  background: var(--cyan-lo);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.genai-chip:hover:not(:disabled) { color: var(--text-hi); border-color: var(--cyan); box-shadow: var(--glow-sm); }
+.genai-chip:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.genai-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-height: 460px;
+  overflow-y: auto;
+  padding: 1rem;
+  border: 1px solid var(--border-lo);
+  border-radius: var(--r-sm);
+  background: rgba(0, 0, 0, 0.22);
+}
+.genai-empty {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  padding: 2rem 0;
+}
+.genai-turn { display: flex; flex-direction: column; gap: 0.6rem; }
+.genai-msg {
+  max-width: 86%;
+  padding: 11px 15px;
+  border-radius: var(--r-sm);
+  font-size: 0.84rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.genai-msg.user {
+  align-self: flex-end;
+  background: var(--cyan-md);
+  border: 1px solid var(--cyan-border);
+  color: var(--text-hi);
+}
+.genai-msg.bot {
+  align-self: flex-start;
+  background: var(--glass-hi);
+  border: 1px solid var(--border-lo);
+  color: var(--text);
+}
+.genai-role {
+  display: block;
+  font-family: var(--hud);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.35rem;
+}
+.genai-answer { color: var(--text); }
+.genai-typing { color: var(--text-dim); font-style: italic; }
+.genai-sources {
+  margin-top: 0.7rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border-lo);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+.genai-sources-label {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.genai-source-tag {
+  font-family: var(--data);
+  font-size: 0.7rem;
+  color: var(--green);
+  background: var(--green-lo);
+  border: 1px solid rgba(0, 255, 157, 0.2);
+  border-radius: var(--r-xs);
+  padding: 2px 8px;
+}
+.genai-input-row {
+  display: flex;
+  gap: 0.7rem;
+  margin-top: 1.1rem;
+}
+.genai-input {
+  flex: 1;
+  font-family: var(--data);
+  font-size: 0.85rem;
+  color: var(--text-hi);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 11px 15px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.genai-input:focus { border-color: var(--cyan); box-shadow: var(--glow-sm); }
+.genai-input:disabled { opacity: 0.4; }
+.genai-input::placeholder { color: var(--text-muted); }
+

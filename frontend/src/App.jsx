@@ -273,7 +273,8 @@ export default function App() {
         )}
         {activeTab === 'quantica' && <TabQuantica />}
         {activeTab === 'visao' && <TabVisao />}
-        {!['dashboard', 'rpa', 'quantica', 'visao'].includes(activeTab) && (
+        {activeTab === 'generative' && <TabGenerative />}
+        {!['dashboard', 'rpa', 'quantica', 'visao', 'generative'].includes(activeTab) && (
           <TabPlaceholder tab={TABS.find(t => t.id === activeTab)} />
         )}
       </main>
@@ -1077,6 +1078,177 @@ function TabVisao() {
           )}
           <p className="label" style={{ marginTop: '0.4rem', fontSize: '0.77rem', lineHeight: 1.7 }}>
             {vInfo.aplicacao}
+          </p>
+        </section>
+      )}
+    </div>
+  )
+}
+
+// ── Tab: Generative AI (RAG · ORBITAL SENTINEL) ───────────────────────────────
+function TabGenerative() {
+  const [gOnline,   setGOnline]   = useState(false)
+  const [gStatus,   setGStatus]   = useState(null)
+  const [gInfo,     setGInfo]     = useState(null)
+  const [exemplos,  setExemplos]  = useState([])
+  const [mensagem,  setMensagem]  = useState('')
+  const [historico, setHistorico] = useState([])   // { pergunta, resposta, fontes }
+  const [loading,   setLoading]   = useState(false)
+  const [erro,      setErro]      = useState(null)
+  const chatEndRef = useRef(null)
+
+  useEffect(() => {
+    APIService.genaiStatus()
+      .then(d => { setGStatus(d); setGOnline(true) })
+      .catch(() => { setGOnline(false); setGStatus(null) })
+    APIService.genaiInfo().then(setGInfo).catch(() => {})
+    APIService.genaiExemplos().then(d => setExemplos(d.exemplos || [])).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [historico, loading])
+
+  const ragPronto = gStatus?.rag === 'pronto'
+
+  const perguntar = async (texto) => {
+    const pergunta = (texto ?? mensagem).trim()
+    if (!pergunta || loading) return
+    setErro(null); setMensagem(''); setLoading(true)
+    setHistorico(h => [...h, { pergunta, resposta: null, fontes: [] }])
+    try {
+      const r = await APIService.genaiChat(pergunta)
+      setHistorico(h => h.map((m, i) =>
+        i === h.length - 1 ? { ...m, resposta: r.resposta, fontes: r.fontes || [] } : m
+      ))
+      // primeira pergunta pode ter aquecido o índice → atualiza status
+      if (!ragPronto) APIService.genaiStatus().then(setGStatus).catch(() => {})
+    } catch {
+      setErro('Erro ao consultar o assistente. Inicie com: cd backend/genai && python api.py '
+            + '(a primeira resposta pode levar 1-2 min para baixar o modelo de embedding).')
+      setHistorico(h => h.slice(0, -1))
+    } finally { setLoading(false) }
+  }
+
+  return (
+    <div>
+      {/* Status */}
+      <section className="card">
+        <h2 className="section-title">Status do Assistente RAG · ORBITAL SENTINEL</h2>
+        <div className="status-row">
+          <span className={`api-badge ${gOnline ? 'online' : 'offline'}`}>
+            {gOnline ? '● Online' : '○ Offline'}
+          </span>
+          {gStatus && <>
+            <span className="label">Índice: {gStatus.rag}</span>
+            <span className="label">LLM: {gStatus.llm}</span>
+            {gStatus.documentos?.length > 0 &&
+              <span className="label">Docs: {gStatus.documentos.length}</span>}
+          </>}
+        </div>
+        {!gOnline && (
+          <div className="alert-box error" style={{ marginTop: '1rem' }}>
+            Backend offline. Inicie com: <code>cd backend/genai &amp;&amp; python api.py</code>
+          </div>
+        )}
+        {gOnline && !ragPronto && (
+          <div className="alert-box" style={{ marginTop: '1rem' }}>
+            O índice é construído na primeira pergunta (download do modelo de embedding · 1-2 min).
+          </div>
+        )}
+      </section>
+
+      {/* Chat */}
+      <section className="card" style={{ marginTop: '1.5rem' }}>
+        <h2 className="section-title">Converse com o Assistente</h2>
+        <p className="label" style={{ marginBottom: '1rem' }}>
+          Pergunte sobre dados espaciais, previsão climática e prevenção de desastres.
+          As respostas vêm <strong>exclusivamente</strong> dos documentos indexados, com as fontes citadas.
+        </p>
+
+        {exemplos.length > 0 && (
+          <div className="genai-chips">
+            {exemplos.map((q, i) => (
+              <button key={i} className="genai-chip" disabled={loading || !gOnline}
+                onClick={() => perguntar(q)} title="Perguntar">
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="genai-chat">
+          {historico.length === 0 && (
+            <div className="genai-empty">Faça uma pergunta ou escolha um exemplo acima.</div>
+          )}
+          {historico.map((m, i) => (
+            <div key={i} className="genai-turn">
+              <div className="genai-msg user"><span className="genai-role">Você</span>{m.pergunta}</div>
+              <div className="genai-msg bot">
+                <span className="genai-role">ORBITAL SENTINEL</span>
+                {m.resposta === null
+                  ? <span className="genai-typing">consultando documentos…</span>
+                  : <>
+                      <span className="genai-answer">{m.resposta}</span>
+                      {m.fontes?.length > 0 && (
+                        <div className="genai-sources">
+                          <span className="genai-sources-label">Fontes:</span>
+                          {m.fontes.map(f => (
+                            <span key={f.indice} className="genai-source-tag">
+                              {f.arquivo}{f.score != null ? ` · ${f.score}` : ''}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </>}
+              </div>
+            </div>
+          ))}
+          <div ref={chatEndRef} />
+        </div>
+
+        {erro && <div className="alert-box error">{erro}</div>}
+
+        <div className="genai-input-row">
+          <input
+            className="genai-input"
+            type="text"
+            placeholder="Digite sua pergunta…"
+            value={mensagem}
+            disabled={!gOnline || loading}
+            onChange={e => setMensagem(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') perguntar() }}
+          />
+          <button className="btn-run" onClick={() => perguntar()}
+            disabled={loading || !gOnline || !mensagem.trim()}>
+            {loading ? 'Enviando…' : 'Enviar'}
+          </button>
+        </div>
+      </section>
+
+      {/* Info do sistema RAG */}
+      {gInfo && (
+        <section className="card" style={{ marginTop: '1.5rem' }}>
+          <h2 className="section-title">Arquitetura do Sistema RAG</h2>
+          <div className="table-wrapper">
+            <table>
+              <tbody>
+                <tr><td><strong>Framework</strong></td><td>{gInfo.pilha?.framework}</td></tr>
+                <tr><td><strong>Embedding</strong></td><td>{gInfo.pilha?.embedding}</td></tr>
+                <tr><td><strong>LLM</strong></td><td>{gInfo.pilha?.llm}</td></tr>
+                <tr><td><strong>Chunking</strong></td><td>{gInfo.pilha?.chunking}</td></tr>
+                <tr><td><strong>Top-K</strong></td><td>{gInfo.pilha?.top_k}</td></tr>
+                <tr><td><strong>Vector Store</strong></td><td>{gInfo.pilha?.vector_store}</td></tr>
+              </tbody>
+            </table>
+          </div>
+          {gInfo.base_conhecimento?.temas && (
+            <p className="label" style={{ marginTop: '0.9rem', fontSize: '0.77rem', lineHeight: 1.7 }}>
+              <strong>Base de conhecimento:</strong> {gInfo.base_conhecimento.temas.join(' · ')}
+            </p>
+          )}
+          <p className="label" style={{ marginTop: '0.4rem', fontSize: '0.77rem', lineHeight: 1.7 }}>
+            {gInfo.aplicacao}
           </p>
         </section>
       )}

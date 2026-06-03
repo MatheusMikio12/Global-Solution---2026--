@@ -1,0 +1,8 @@
+# Índice vetorial persistido (regenerado a partir de data/)
+storage/
+
+# Documentos enviados em runtime (a base-semente é recriada por knowledge_base.py)
+data/
+
+__pycache__/
+*.pyc
