@@ -24,9 +24,13 @@ Global-Solution---2026--/
 │   ├── quantica/               # QML — classificação climática (FastAPI :8001)
 │   │   ├── api.py              # SVM-RBF, Random Forest, QSVC, VQC
 │   │   └── *.pkl / *.model     # Modelos treinados (NASA POWER)
-│   └── visao-computacional/    # Visão Computacional (FastAPI :8002)
-│       ├── api.py              # Detecção de incêndios (MobileNetV2)
-│       ├── modelo_wildfire.keras
+│   ├── visao-computacional/    # Visão Computacional (FastAPI :8002)
+│   │   ├── api.py              # Detecção de incêndios (MobileNetV2)
+│   │   ├── modelo_wildfire.keras
+│   │   └── README.md
+│   ├── genai/                  # GenAI / RAG — ORBITAL SENTINEL (FastAPI :8003)
+│   └── neuromorfica/           # Computação Neuromórfica — NeuroSpace Alert (FastAPI :8004)
+│       ├── api.py              # Sensor neuromórfico (memristor virtual)
 │       └── README.md
 ├── frontend/                   # React + Vite (porta 3000)
 │   └── src/
@@ -57,6 +61,14 @@ CNN **MobileNetV2** (transfer learning) que classifica imagens aéreas/satélite
 `incêndio` ou `sem incêndio`. Treinada no Wildfire Prediction Dataset (Kaggle),
 atingindo **95,13% de acurácia** e **AUC 0,987** no conjunto de teste.
 Detalhes em [backend/visao-computacional/README.md](backend/visao-computacional/README.md).
+
+### 4. Computação Neuromórfica — NeuroSpace Alert (porta 8004)
+
+Sensor neuromórfico de baixo consumo com **memristor virtual**: temperatura, radiação e
+poeira são convertidas em uma tensão de entrada que alimenta um estado com memória local
+(`w`), acionando um LED de alerta (apagado → amarelo → vermelho). Três ajustes calibram a
+sensibilidade da detecção de condição crítica em uma estação remota monitorada por satélite.
+Detalhes em [backend/neuromorfica/README.md](backend/neuromorfica/README.md).
 
 ## Início rápido
 
@@ -94,6 +106,11 @@ python api.py
 cd backend/visao-computacional
 pip install -r requirements.txt
 python api.py
+
+# Neuromórfica (porta 8004)
+cd backend/neuromorfica
+pip install -r requirements.txt
+python api.py
 ```
 
 O frontend lê as URLs dos backends via variáveis Vite (com fallback para localhost):
@@ -103,6 +120,8 @@ O frontend lê as URLs dos backends via variáveis Vite (com fallback para local
 | `VITE_API_BASE_URL`     | `http://localhost:8000` | RPA                  |
 | `VITE_QUANTUM_API_URL`  | `http://localhost:8001` | Quântica             |
 | `VITE_VISION_API_URL`   | `http://localhost:8002` | Visão Computacional  |
+| `VITE_GENAI_API_URL`    | `http://localhost:8003` | GenAI / RAG          |
+| `VITE_NEURO_API_URL`    | `http://localhost:8004` | Neuromórfica         |
 
 ## Endpoints principais
 
@@ -131,6 +150,14 @@ O frontend lê as URLs dos backends via variáveis Vite (com fallback para local
 | GET  | `/visao/status` | Estado da API e do modelo |
 | GET  | `/visao/info` | Arquitetura, dataset e métricas |
 | POST | `/visao/prever` | Classifica uma imagem (multipart `file`) |
+
+### Neuromórfica (8004)
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET  | `/neuro/status`  | Estado da API e do dataset |
+| GET  | `/neuro/info`    | Cenário, modelo conceitual e parâmetros |
+| GET  | `/neuro/ajustes` | Resumo comparativo dos três ajustes |
+| POST | `/neuro/simular` | Roda a simulação (`V_limiar`, `taxa_chaveamento`) |
 
 Cada backend expõe documentação Swagger automática em `/docs`
 (ex.: http://localhost:8002/docs).

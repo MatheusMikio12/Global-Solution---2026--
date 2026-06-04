@@ -53,14 +53,6 @@ const PLACEHOLDER_CONTENT = {
       { titulo: 'Fusão Terrestre-Orbital', desc: 'Kalman Filter combina leituras IoT de solo com dados satelitais, reduzindo incerteza de temperatura de ±3°C para ±0.8°C nas regiões com cobertura de estações.' },
     ],
   },
-  neuro: {
-    intro: 'Chips neuromórficos e computação distribuída processam streams satelitais em tempo real com consumo de energia ordens de grandeza menor que GPUs convencionais.',
-    cards: [
-      { titulo: 'Spiking Neural Networks', desc: 'Intel Loihi 2 com framework Lava roda SNN para detecção de anomalias em streams GOES-16 com < 1W de consumo vs. 200W de GPUs — viável para satélites com energia solar limitada.' },
-      { titulo: 'Cluster Spark Distribuído', desc: 'Apache Spark distribui o Módulo 3 (Isolation Forest) em cluster de 8 workers, reduzindo o tempo de treinamento sobre 2.592 registros de 45s para 4s — escala para 100× mais dados.' },
-      { titulo: 'HPC para Simulação WRF', desc: 'Supercomputadores como o SDumont (LNCC) rodam modelo WRF a 1km de resolução para previsão regional, alimentando o OVERWATCH com dados de alta fidelidade como entrada do Módulo 1.' },
-    ],
-  },
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
@@ -274,7 +266,8 @@ export default function App() {
         {activeTab === 'quantica' && <TabQuantica />}
         {activeTab === 'visao' && <TabVisao />}
         {activeTab === 'generative' && <TabGenerative />}
-        {!['dashboard', 'rpa', 'quantica', 'visao', 'generative'].includes(activeTab) && (
+        {activeTab === 'neuro' && <TabNeuro />}
+        {!['dashboard', 'rpa', 'quantica', 'visao', 'generative', 'neuro'].includes(activeTab) && (
           <TabPlaceholder tab={TABS.find(t => t.id === activeTab)} />
         )}
       </main>
@@ -1249,6 +1242,270 @@ function TabGenerative() {
           )}
           <p className="label" style={{ marginTop: '0.4rem', fontSize: '0.77rem', lineHeight: 1.7 }}>
             {gInfo.aplicacao}
+          </p>
+        </section>
+      )}
+    </div>
+  )
+}
+
+// ── Tab: Computação Neuromórfica (sensor com memristor virtual) ───────────────
+const LED_UI = {
+  APAGADO:  { cor: '#3a4a5a', label: 'APAGADO',  diag: 'NORMAL' },
+  AMARELO:  { cor: '#F1C40F', label: 'AMARELO',  diag: 'OBSERVAÇÃO' },
+  VERMELHO: { cor: '#ff3f3f', label: 'VERMELHO', diag: 'ALERTA CRÍTICO' },
+}
+const AJUSTE_PRESETS = {
+  'Ajuste_A_sensivel':    { V_limiar: 24, taxa_chaveamento: 0.007 },
+  'Ajuste_B_equilibrado': { V_limiar: 28, taxa_chaveamento: 0.005 },
+  'Ajuste_C_conservador': { V_limiar: 32, taxa_chaveamento: 0.004 },
+}
+
+function TabNeuro() {
+  const [nOnline,  setNOnline]  = useState(false)
+  const [nStatus,  setNStatus]  = useState(null)
+  const [nInfo,    setNInfo]    = useState(null)
+  const [ajustes,  setAjustes]  = useState([])
+  const [vLimiar,  setVLimiar]  = useState(28)
+  const [taxa,     setTaxa]     = useState(0.005)
+  const [loading,  setLoading]  = useState(false)
+  const [resultado, setResultado] = useState(null)
+  const [erro,     setErro]     = useState(null)
+
+  useEffect(() => {
+    APIService.neuroStatus()
+      .then(d => { setNStatus(d); setNOnline(true) })
+      .catch(() => { setNOnline(false); setNStatus(null) })
+    APIService.neuroInfo().then(setNInfo).catch(() => {})
+    APIService.neuroAjustes().then(d => setAjustes(d.ajustes || [])).catch(() => {})
+  }, [])
+
+  const simular = async (vl = vLimiar, tx = taxa) => {
+    setErro(null); setLoading(true)
+    try {
+      setResultado(await APIService.neuroSimular(vl, tx))
+    } catch {
+      setErro('Erro ao chamar a API neuromórfica. Inicie com: cd backend/neuromorfica && python api.py')
+    } finally { setLoading(false) }
+  }
+
+  const aplicarPreset = (nome) => {
+    const p = AJUSTE_PRESETS[nome]
+    if (!p) return
+    setVLimiar(p.V_limiar); setTaxa(p.taxa_chaveamento)
+    simular(p.V_limiar, p.taxa_chaveamento)
+  }
+
+  const serie = resultado?.serie || []
+  const ledFinal = serie.length ? serie[serie.length - 1].LED : null
+  const ledInfo = ledFinal ? LED_UI[ledFinal] : null
+  const trans = resultado?.transicoes
+
+  return (
+    <div>
+      {/* Status */}
+      <section className="card">
+        <h2 className="section-title">Status do Sensor Neuromórfico · NeuroSpace Alert</h2>
+        <div className="status-row">
+          <span className={`api-badge ${nOnline ? 'online' : 'offline'}`}>
+            {nOnline ? '● Online' : '○ Offline'}
+          </span>
+          {nStatus && <>
+            <span className="label">Dados: {nStatus.dados}</span>
+            {nStatus.arquivo && <span className="label">Arquivo: {nStatus.arquivo}</span>}
+            {nStatus.amostras > 0 && <span className="label">Amostras: {nStatus.amostras}</span>}
+          </>}
+        </div>
+        {!nOnline && (
+          <div className="alert-box error" style={{ marginTop: '1rem' }}>
+            Backend offline. Inicie com: <code>cd backend/neuromorfica &amp;&amp; python api.py</code>
+          </div>
+        )}
+      </section>
+
+      {/* Simulação interativa */}
+      <section className="card" style={{ marginTop: '1.5rem' }}>
+        <h2 className="section-title">Simular o Memristor Virtual</h2>
+        <p className="label" style={{ marginBottom: '1.25rem' }}>
+          Ajuste o <strong>limiar de tensão</strong> e a <strong>taxa de chaveamento</strong>.
+          O memristor acumula efeito acima do limiar (memória local) e aciona o LED:
+          <strong> APAGADO</strong> → <strong>AMARELO</strong> (w≥0.35) → <strong>VERMELHO</strong> (w≥0.65).
+        </p>
+
+        <div className="neuro-presets">
+          {Object.keys(AJUSTE_PRESETS).map(nome => (
+            <button key={nome} className="genai-chip" disabled={loading || !nOnline}
+              onClick={() => aplicarPreset(nome)}>
+              {nome.replace('Ajuste_', '').replace('_', ' · ')}
+            </button>
+          ))}
+        </div>
+
+        <div className="neuro-controls">
+          <div className="neuro-slider">
+            <label className="neuro-slider-label">
+              <span>Limiar de tensão (V_limiar)</span>
+              <strong>{vLimiar} V</strong>
+            </label>
+            <input type="range" min="15" max="40" step="1" value={vLimiar}
+              onChange={e => setVLimiar(Number(e.target.value))} disabled={!nOnline} />
+          </div>
+          <div className="neuro-slider">
+            <label className="neuro-slider-label">
+              <span>Taxa de chaveamento</span>
+              <strong>{taxa.toFixed(3)}</strong>
+            </label>
+            <input type="range" min="0.001" max="0.02" step="0.001" value={taxa}
+              onChange={e => setTaxa(Number(e.target.value))} disabled={!nOnline} />
+          </div>
+          <button className="btn-run" onClick={() => simular()} disabled={loading || !nOnline}>
+            {loading ? 'Simulando...' : 'Rodar Simulação'}
+          </button>
+        </div>
+
+        {erro && <div className="alert-box error">{erro}</div>}
+
+        {resultado && (
+          <div style={{ marginTop: '1.75rem' }}>
+            {/* Indicador de LED + KPIs */}
+            <div className="neuro-result-head">
+              <div className="neuro-led" style={{ background: ledInfo?.cor, boxShadow: `0 0 24px ${ledInfo?.cor}` }} />
+              <div>
+                <div className="neuro-led-state">{ledInfo?.label}</div>
+                <div className="label">Estado final do sensor · {ledInfo?.diag}</div>
+              </div>
+            </div>
+
+            <div className="kpi-grid" style={{ marginTop: '1.25rem' }}>
+              <KPI label="1º LED não-apagado"
+                value={trans?.primeiro_LED_nao_apagado_min != null ? `${trans.primeiro_LED_nao_apagado_min} min` : '—'}
+                color="#F1C40F" />
+              <KPI label="1º LED vermelho"
+                value={trans?.primeiro_LED_vermelho_min != null ? `${trans.primeiro_LED_vermelho_min} min` : '—'}
+                color="#ff3f3f" />
+              <KPI label="Leituras em alerta"
+                value={resultado.contagem_led?.VERMELHO ?? 0} color="#ff3f3f" />
+              <KPI label="Leituras em observação"
+                value={resultado.contagem_led?.AMARELO ?? 0} color="#F1C40F" />
+            </div>
+
+            {/* Gráfico: tensão vs. estado do memristor */}
+            <h3 className="section-title" style={{ marginTop: '1.75rem' }}>
+              Tensão de Entrada × Estado do Memristor
+            </h3>
+            <div style={{ width: '100%', height: 320 }}>
+              <ResponsiveContainer>
+                <LineChart data={serie} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                  <XAxis dataKey="tempo_min" stroke="#8aa" tick={{ fontSize: 11 }}
+                    label={{ value: 'tempo (min)', position: 'insideBottom', offset: -2, fill: '#8aa', fontSize: 11 }} />
+                  <YAxis yAxisId="v" stroke="#00f2ff" tick={{ fontSize: 11 }} domain={[15, 40]} />
+                  <YAxis yAxisId="w" orientation="right" stroke="#ff9042" tick={{ fontSize: 11 }} domain={[0, 1]} />
+                  <Tooltip contentStyle={{ background: '#0a1420', border: '1px solid rgba(0,242,255,0.3)' }} />
+                  <Legend />
+                  <Line yAxisId="v" type="monotone" dataKey="V_entrada" name="V entrada (V)"
+                    stroke="#00f2ff" dot={false} strokeWidth={2} />
+                  <Line yAxisId="w" type="monotone" dataKey="estado_memristor" name="estado memristor (w)"
+                    stroke="#ff9042" dot={false} strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Tabela das últimas leituras */}
+            <h3 className="section-title" style={{ marginTop: '1.5rem' }}>Últimas Leituras</h3>
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>tempo (min)</th><th>temp (°C)</th><th>rad (µSv/h)</th><th>poeira (%)</th>
+                    <th>V entrada</th><th>w</th><th>LED</th><th>condição real</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {serie.slice(-12).map((r, i) => (
+                    <tr key={i}>
+                      <td>{r.tempo_min}</td>
+                      <td>{r.temperatura_C}</td>
+                      <td>{r.radiacao_uSv_h}</td>
+                      <td>{r.poeira_pct}</td>
+                      <td>{r.V_entrada}</td>
+                      <td>{r.estado_memristor}</td>
+                      <td>
+                        <span className="neuro-led-tag" style={{
+                          color: LED_UI[r.LED]?.cor,
+                          borderColor: LED_UI[r.LED]?.cor,
+                        }}>{r.LED}</span>
+                      </td>
+                      <td>{r.condicao_real}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Comparação dos três ajustes */}
+      {ajustes.length > 0 && (
+        <section className="card" style={{ marginTop: '1.5rem' }}>
+          <h2 className="section-title">Comparação dos Ajustes da Equipe</h2>
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ajuste</th><th>V_limiar</th><th>Taxa</th>
+                  <th>1º não-apagado (min)</th><th>1º vermelho (min)</th>
+                  <th>Leituras vermelho</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ajustes.map(a => (
+                  <tr key={a.ajuste}>
+                    <td><strong>{a.ajuste.replace('Ajuste_', '').replace('_', ' · ')}</strong></td>
+                    <td>{a.V_limiar}</td>
+                    <td>{a.taxa_chaveamento}</td>
+                    <td>{a.primeiro_LED_nao_apagado_min ?? '—'}</td>
+                    <td>{a.primeiro_LED_vermelho_min ?? '—'}</td>
+                    <td>{a.contagem_led?.VERMELHO ?? 0}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="label" style={{ marginTop: '0.75rem', fontSize: '0.77rem', lineHeight: 1.7 }}>
+            O ajuste <strong>sensível</strong> detecta primeiro (mais cedo), mas é mais propenso a
+            alarmes falsos; o <strong>conservador</strong> detecta tarde. O <strong>equilibrado</strong> é
+            o protótipo conceitual recomendado.
+          </p>
+        </section>
+      )}
+
+      {/* Info do sensor */}
+      {nInfo && (
+        <section className="card" style={{ marginTop: '1.5rem' }}>
+          <h2 className="section-title">Sobre o Sensor</h2>
+          <div className="table-wrapper">
+            <table>
+              <tbody>
+                <tr><td><strong>Sensor</strong></td><td>{nInfo.sensor?.nome}</td></tr>
+                <tr><td><strong>Tipo</strong></td><td>{nInfo.sensor?.tipo}</td></tr>
+                <tr><td><strong>Entrada</strong></td><td>{nInfo.sensor?.entrada}</td></tr>
+                <tr><td><strong>Conversão</strong></td><td>{nInfo.sensor?.conversao}</td></tr>
+                <tr><td><strong>Memória</strong></td><td>{nInfo.sensor?.memoria}</td></tr>
+                <tr><td><strong>Saída</strong></td><td>{nInfo.sensor?.saida}</td></tr>
+                <tr><td><strong>Amostragem</strong></td><td>{nInfo.sensor?.amostragem}</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="label" style={{ marginTop: '0.9rem', fontSize: '0.77rem', lineHeight: 1.7 }}>
+            <strong>Cenário:</strong> {nInfo.cenario}
+          </p>
+          <p className="label" style={{ marginTop: '0.4rem', fontSize: '0.77rem', lineHeight: 1.7 }}>
+            <strong>Baixo consumo:</strong> {nInfo.baixo_consumo}
+          </p>
+          <p className="label" style={{ marginTop: '0.4rem', fontSize: '0.77rem', lineHeight: 1.7 }}>
+            {nInfo.aplicacao}
           </p>
         </section>
       )}

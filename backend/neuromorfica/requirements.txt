@@ -1,0 +1,7 @@
+# Computação Neuromórfica — sensor com memristor virtual
+numpy>=1.24.0
+pandas>=2.0.0
+
+# API REST
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0

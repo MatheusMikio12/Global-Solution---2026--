@@ -7,6 +7,7 @@ const API_BASE_URL     = import.meta.env.VITE_API_BASE_URL     || "http://localh
 const QUANTUM_API_URL  = import.meta.env.VITE_QUANTUM_API_URL  || "http://localhost:8001";
 const VISION_API_URL   = import.meta.env.VITE_VISION_API_URL   || "http://localhost:8002";
 const GENAI_API_URL    = import.meta.env.VITE_GENAI_API_URL    || "http://localhost:8003";
+const NEURO_API_URL    = import.meta.env.VITE_NEURO_API_URL    || "http://localhost:8004";
 
 class APIService {
   /**
@@ -258,6 +259,43 @@ class APIService {
     return this.genaiRequest("/genai/chat", {
       method: "POST",
       body: JSON.stringify({ mensagem }),
+    });
+  }
+
+  // ==================== ENDPOINTS NEUROMÓRFICA (porta 8004) ====================
+
+  static async neuroRequest(endpoint, options = {}) {
+    const url = `${NEURO_API_URL}${endpoint}`;
+    const config = {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    };
+    try {
+      const response = await fetch(url, config);
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error("Neuro API Error:", error);
+      throw error;
+    }
+  }
+
+  static neuroStatus() {
+    return this.neuroRequest("/neuro/status", { method: "GET" });
+  }
+
+  static neuroInfo() {
+    return this.neuroRequest("/neuro/info", { method: "GET" });
+  }
+
+  static neuroAjustes() {
+    return this.neuroRequest("/neuro/ajustes", { method: "GET" });
+  }
+
+  static neuroSimular(V_limiar, taxa_chaveamento) {
+    return this.neuroRequest("/neuro/simular", {
+      method: "POST",
+      body: JSON.stringify({ V_limiar, taxa_chaveamento }),
     });
   }
 }
