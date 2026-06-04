@@ -1,19 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { Routes, Route, NavLink, useNavigate, Navigate } from 'react-router-dom'
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell,
 } from 'recharts'
 import APIService from './services/api'
+import TabIoT from './TabIoT'
 
 const TABS = [
-  { id: 'dashboard',  label: 'Dashboard',    subject: 'Visão Geral do Projeto' },
-  { id: 'rpa',        label: 'RPA',          subject: 'AI for Robotic Process Automation' },
-  { id: 'generative', label: 'Generative AI', subject: 'Generative AI e Advanced Nets' },
-  { id: 'pln',        label: 'PLN',          subject: 'PLN, Chatbots & Virtual Agents' },
-  { id: 'visao',      label: 'Visão Comp.',  subject: 'Visão Computacional' },
-  { id: 'iot',        label: 'IoT',          subject: 'Physical Computing, Embedded AI & Cognitive IoT' },
-  { id: 'neuro',      label: 'Neuromórfica', subject: 'Cluster Computing, Computação Neuromórfica e Supercomputadores' },
-  { id: 'quantica',   label: 'Quântica',     subject: 'Computação Quântica e IA' },
+  { id: 'dashboard',  path: '/',           label: 'Dashboard',    subject: 'Visão Geral do Projeto' },
+  { id: 'rpa',        path: '/rpa',        label: 'RPA',          subject: 'AI for Robotic Process Automation' },
+  { id: 'generative', path: '/generative', label: 'Generative AI', subject: 'Generative AI e Advanced Nets' },
+  { id: 'pln',        path: '/pln',        label: 'PLN',          subject: 'PLN, Chatbots & Virtual Agents' },
+  { id: 'visao',      path: '/visao',      label: 'Visão Comp.',  subject: 'Visão Computacional' },
+  { id: 'iot',        path: '/iot',        label: 'IoT',          subject: 'Physical Computing, Embedded AI & Cognitive IoT' },
+  { id: 'neuro',      path: '/neuro',      label: 'Neuromórfica', subject: 'Cluster Computing, Computação Neuromórfica e Supercomputadores' },
+  { id: 'quantica',   path: '/quantica',   label: 'Quântica',     subject: 'Computação Quântica e IA' },
 ]
 
 const SEV_COLOR = { critica: '#C0392B', alta: '#E67E22', media: '#F1C40F', baixa: '#27AE60' }
@@ -101,7 +103,6 @@ function SkeletonRows({ rows = 5 }) {
 
 // ── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [activeTab,    setActiveTab]    = useState('dashboard')
   const [status,       setStatus]       = useState(null)
   const [apiOnline,    setApiOnline]    = useState(false)
   const [resumo,       setResumo]       = useState(null)
@@ -232,49 +233,67 @@ export default function App() {
         </div>
         <nav className="tab-bar">
           {TABS.map(t => (
-            <button key={t.id}
-              className={`tab-btn ${activeTab === t.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(t.id)} title={t.subject}>
+            <NavLink
+              key={t.id}
+              to={t.path}
+              end={t.path === '/'}
+              className={({ isActive }) => `tab-btn${isActive ? ' active' : ''}`}
+              title={t.subject}
+            >
               <span>{t.label}</span>
-            </button>
+            </NavLink>
           ))}
         </nav>
       </header>
 
       <main>
-        <div className="subject-label">
-          {TABS.find(t => t.id === activeTab)?.subject}
-        </div>
-
-        {activeTab === 'dashboard' && (
-          <TabDashboard
-            resumo={resumo} apiOnline={apiOnline} pipelineStatus={pipelineStatus}
-            alertas={alertasFiltrados} allAlertas={alertas}
-            loadingDados={loadingDados}
-            filtroSev={filtroSev} setFiltroSev={setFiltroSev}
-            filtroRegiao={filtroRegiao} setFiltroRegiao={setFiltroRegiao}
-            regioesList={regioesList} serieData={serieData} regiaoData={regiaoData}
-          />
-        )}
-        {activeTab === 'rpa' && (
-          <TabRPA status={status} apiOnline={apiOnline} pipelineStatus={pipelineStatus}
-            loading={loading} usarIa={usarIa} setUsarIa={setUsarIa}
-            maxAlertas={maxAlertas} setMaxAlertas={setMaxAlertas}
-            rodarPipeline={rodarPipeline} erroDisparo={erroDisparo}
-          />
-        )}
-        {activeTab === 'quantica' && <TabQuantica />}
-        {activeTab === 'visao' && <TabVisao />}
-        {activeTab === 'generative' && <TabGenerative />}
-        {activeTab === 'neuro' && <TabNeuro />}
-        {!['dashboard', 'rpa', 'quantica', 'visao', 'generative', 'neuro'].includes(activeTab) && (
-          <TabPlaceholder tab={TABS.find(t => t.id === activeTab)} />
-        )}
+        <Routes>
+          <Route path="/" element={
+            <>
+              <div className="subject-label">{TABS[0].subject}</div>
+              <TabDashboard
+                resumo={resumo} apiOnline={apiOnline} pipelineStatus={pipelineStatus}
+                alertas={alertasFiltrados} allAlertas={alertas}
+                loadingDados={loadingDados}
+                filtroSev={filtroSev} setFiltroSev={setFiltroSev}
+                filtroRegiao={filtroRegiao} setFiltroRegiao={setFiltroRegiao}
+                regioesList={regioesList} serieData={serieData} regiaoData={regiaoData}
+              />
+            </>
+          } />
+          <Route path="/rpa" element={
+            <>
+              <div className="subject-label">{TABS.find(t => t.id === 'rpa').subject}</div>
+              <TabRPA status={status} apiOnline={apiOnline} pipelineStatus={pipelineStatus}
+                loading={loading} usarIa={usarIa} setUsarIa={setUsarIa}
+                maxAlertas={maxAlertas} setMaxAlertas={setMaxAlertas}
+                rodarPipeline={rodarPipeline} erroDisparo={erroDisparo}
+              />
+            </>
+          } />
+          <Route path="/generative" element={<WithSubject id="generative"><TabGenerative /></WithSubject>} />
+          <Route path="/pln"        element={<WithSubject id="pln"><TabPlaceholder tab={TABS.find(t => t.id === 'pln')} /></WithSubject>} />
+          <Route path="/visao"      element={<WithSubject id="visao"><TabVisao /></WithSubject>} />
+          <Route path="/iot"        element={<WithSubject id="iot"><TabIoT /></WithSubject>} />
+          <Route path="/neuro"      element={<WithSubject id="neuro"><TabNeuro /></WithSubject>} />
+          <Route path="/quantica"   element={<WithSubject id="quantica"><TabQuantica /></WithSubject>} />
+          <Route path="*"           element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
 
       <footer>OVERWATCH · FIAP Global Solution 2026</footer>
       <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
+  )
+}
+
+function WithSubject({ id, children }) {
+  const tab = TABS.find(t => t.id === id)
+  return (
+    <>
+      <div className="subject-label">{tab?.subject}</div>
+      {children}
+    </>
   )
 }
 
