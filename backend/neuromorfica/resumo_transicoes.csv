@@ -1,0 +1,4 @@
+ajuste,V_limiar,taxa_chaveamento,primeiro_LED_nao_apagado_min,primeiro_LED_vermelho_min
+Ajuste_A_sensivel,24,0.007,170,185
+Ajuste_B_equilibrado,28,0.005,205,225
+Ajuste_C_conservador,32,0.004,245,280

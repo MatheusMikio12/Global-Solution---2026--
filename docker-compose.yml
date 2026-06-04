@@ -51,6 +51,20 @@ services:
       - app-network
     command: uvicorn api:app --host 0.0.0.0 --port 8003 --reload
 
+  # Backend Neuromórfica — NeuroSpace Alert (Porta 8004)
+  backend-neuromorfica:
+    build:
+      context: ./backend/neuromorfica
+      dockerfile: Dockerfile
+    container_name: neuromorfica-api
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./backend/neuromorfica:/app
+    networks:
+      - app-network
+    command: uvicorn api:app --host 0.0.0.0 --port 8004 --reload
+
   # Frontend (Porta 3000)
   frontend:
     build:
@@ -62,6 +76,7 @@ services:
     environment:
       - REACT_APP_API_BASE_URL=http://localhost:8000
       - VITE_GENAI_API_URL=http://localhost:8003
+      - VITE_NEURO_API_URL=http://localhost:8004
     volumes:
       - ./frontend/src:/app/src
     networks:
