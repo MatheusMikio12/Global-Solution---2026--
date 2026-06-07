@@ -1263,6 +1263,38 @@ footer {
   margin-bottom: 0.35rem;
 }
 .genai-answer { color: var(--text); }
+.markdown-body {
+  white-space: normal;
+  color: var(--text);
+}
+.markdown-body p { margin: 0 0 0.65rem 0; }
+.markdown-body p:last-child { margin-bottom: 0; }
+.markdown-body ul, .markdown-body ol { margin: 0 0 0.65rem 1.2rem; padding: 0; }
+.markdown-body li { margin-bottom: 0.3rem; }
+.markdown-body strong { color: var(--text-hi); }
+.markdown-body code {
+  background: var(--glass-lo, rgba(255,255,255,0.06));
+  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+  font-size: 0.82em;
+}
+.markdown-body blockquote {
+  margin: 0.4rem 0;
+  padding: 0.4rem 0.8rem;
+  border-left: 2px solid var(--cyan-border, #2dd4bf);
+  background: var(--glass-lo, rgba(255,255,255,0.04));
+  color: var(--text-dim);
+  font-size: 0.9em;
+}
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  font-family: var(--hud);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin: 0.8rem 0 0.4rem 0;
+}
+.markdown-body h1:first-child, .markdown-body h2:first-child, .markdown-body h3:first-child { margin-top: 0; }
 .genai-typing { color: var(--text-dim); font-style: italic; }
 .genai-sources {
   margin-top: 0.7rem;

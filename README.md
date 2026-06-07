@@ -29,13 +29,22 @@ Global-Solution---2026--/
 │   │   ├── modelo_wildfire.keras
 │   │   └── README.md
 │   ├── genai/                  # GenAI / RAG — ORBITAL SENTINEL (FastAPI :8003)
-│   └── neuromorfica/           # Computação Neuromórfica — NeuroSpace Alert (FastAPI :8004)
-│       ├── api.py              # Sensor neuromórfico (memristor virtual)
+│   ├── neuromorfica/           # Computação Neuromórfica — NeuroSpace Alert (FastAPI :8004)
+│   │   ├── api.py              # Sensor neuromórfico (memristor virtual)
+│   │   └── README.md
+│   └── pln/                    # PLN — RAG SUETERES, Edifícios Verdes (FastAPI :8005)
+│       ├── api/                # FastAPI app · routers (health/query/ingest/sources)
+│       ├── rag/                # Pipeline RAG (retriever, reranker, llm_client, guardrails...)
+│       ├── ingestion/ vector_store/ document_store/ domain/ config/
+│       ├── corpus/             # 15 documentos técnicos pré-curados
+│       ├── evaluation/         # Notebook + métricas RAG vs LLM puro
 │       └── README.md
 ├── frontend/                   # React + Vite (porta 3000)
 │   └── src/
-│       ├── App.jsx             # Abas: Dashboard, RPA, Visão, Quântica, ...
+│       ├── App.jsx             # Abas: Dashboard, RPA, Generative AI, PLN, Visão, IoT, Neuro, Quântica
 │       └── services/api.js     # Cliente HTTP centralizado
+├── docs/
+│   └── INTEGRATION_PLAN.md     # Auditoria + arquitetura + riscos da integração do módulo PLN
 ├── docker-compose.yml
 └── README.md
 ```
@@ -69,6 +78,39 @@ poeira são convertidas em uma tensão de entrada que alimenta um estado com mem
 (`w`), acionando um LED de alerta (apagado → amarelo → vermelho). Três ajustes calibram a
 sensibilidade da detecção de condição crítica em uma estação remota monitorada por satélite.
 Detalhes em [backend/neuromorfica/README.md](backend/neuromorfica/README.md).
+
+### 5. PLN — Assistente Técnico RAG · SUETERES (porta 8005)
+
+Assistente técnico especializado em **Edifícios Verdes e Net Zero de Energia e Água**,
+construído com um pipeline **RAG (Retrieval-Augmented Generation)** local e auditável:
+ChromaDB (vetores) + `multilingual-e5-large` (embeddings) + reranker cross-encoder +
+**Mistral 7B via Ollama local**, com guardrails anti-alucinação em 5 camadas e citação
+obrigatória das fontes em formato ABNT.
+
+```mermaid
+flowchart LR
+    U[Usuário no Dashboard] -->|"pergunta técnica"| FE[Frontend React · TabPLN]
+    FE -->|POST /api/v1/query| API[backend/pln :8005 · FastAPI]
+    API --> RET[Retriever + Reranker\nChromaDB · multilingual-e5-large]
+    RET --> CTX[ContextBuilder\nprompt grounded + citacoes]
+    CTX --> LLM[Ollama local\nmistral 7B instruct]
+    LLM --> GRD[Guardrails anti-alucinacao]
+    GRD -->|resposta + fontes + confianca| FE
+```
+
+Corpus técnico próprio com **15 documentos normativos** (LEED v4.1, AQUA-HQE, ABNT NBR
+15575/10844, Selo Casa Azul+, PROCEL Edifica, ANA, CBCS, EPE, ABSOLAR, ASHRAE 90.1, ABESCO,
+IEA, entre outros), pré-indexados (61 chunks). Desenvolvido na disciplina de PLN e integrado
+ao OVERWATCH como microsserviço plugável — exemplo de pergunta:
+
+> *"Quais práticas de reúso de água podem ser aplicadas em regiões afetadas por seca?"*
+
+Detalhes em [backend/pln/README.md](backend/pln/README.md),
+[backend/pln/AUDITORIA_FINAL_PLN.md](backend/pln/AUDITORIA_FINAL_PLN.md) e
+[docs/INTEGRATION_PLAN.md](docs/INTEGRATION_PLAN.md).
+
+> ⚠️ Requer [Ollama](https://ollama.com) rodando localmente com o modelo
+> `mistral:7b-instruct-v0.3-q4_K_M` (`ollama pull mistral:7b-instruct-v0.3-q4_K_M`).
 
 ## Início rápido
 
@@ -111,6 +153,13 @@ python api.py
 cd backend/neuromorfica
 pip install -r requirements.txt
 python api.py
+
+# PLN — Assistente RAG SUETERES (porta 8005, requer Ollama local)
+cd backend/pln
+pip install -r requirements.txt
+ollama pull mistral:7b-instruct-v0.3-q4_K_M
+python scripts/ingest_corpus.py ingest-corpus --corpus-dir ./corpus --force   # 1ª vez
+uvicorn api.main:app --host 0.0.0.0 --port 8005
 ```
 
 O frontend lê as URLs dos backends via variáveis Vite (com fallback para localhost):
@@ -122,6 +171,7 @@ O frontend lê as URLs dos backends via variáveis Vite (com fallback para local
 | `VITE_VISION_API_URL`   | `http://localhost:8002` | Visão Computacional  |
 | `VITE_GENAI_API_URL`    | `http://localhost:8003` | GenAI / RAG          |
 | `VITE_NEURO_API_URL`    | `http://localhost:8004` | Neuromórfica         |
+| `VITE_PLN_API_URL`      | `http://localhost:8005` | PLN / RAG (SUETERES) |
 
 ## Endpoints principais
 
@@ -158,6 +208,14 @@ O frontend lê as URLs dos backends via variáveis Vite (com fallback para local
 | GET  | `/neuro/info`    | Cenário, modelo conceitual e parâmetros |
 | GET  | `/neuro/ajustes` | Resumo comparativo dos três ajustes |
 | POST | `/neuro/simular` | Roda a simulação (`V_limiar`, `taxa_chaveamento`) |
+
+### PLN — Assistente RAG SUETERES (8005)
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET  | `/health` | Estado da API, contagem de vetores e disponibilidade do LLM |
+| POST | `/api/v1/query` | Consulta o assistente técnico (RAG) — requer header `X-API-Key` |
+| GET  | `/api/v1/sources` | Lista os documentos indexados no corpus — requer `X-API-Key` |
+| POST | `/api/v1/ingest` | Ingestão de novos documentos no corpus — requer `X-API-Key` |
 
 Cada backend expõe documentação Swagger automática em `/docs`
 (ex.: http://localhost:8002/docs).

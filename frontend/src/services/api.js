@@ -8,6 +8,8 @@ const QUANTUM_API_URL  = import.meta.env.VITE_QUANTUM_API_URL  || "http://localh
 const VISION_API_URL   = import.meta.env.VITE_VISION_API_URL   || "http://localhost:8002";
 const GENAI_API_URL    = import.meta.env.VITE_GENAI_API_URL    || "http://localhost:8003";
 const NEURO_API_URL    = import.meta.env.VITE_NEURO_API_URL    || "http://localhost:8004";
+const PLN_API_URL      = import.meta.env.VITE_PLN_API_URL      || "http://localhost:8005";
+const PLN_API_KEY      = import.meta.env.VITE_PLN_API_KEY      || "sueteres-dev-key";
 
 class APIService {
   /**
@@ -296,6 +298,52 @@ class APIService {
     return this.neuroRequest("/neuro/simular", {
       method: "POST",
       body: JSON.stringify({ V_limiar, taxa_chaveamento }),
+    });
+  }
+
+  // ==================== ENDPOINTS PLN / RAG · SUETERES (porta 8005) ====================
+  // Assistente técnico especializado em Edifícios Verdes e Net Zero de Energia e Água.
+  // Pipeline RAG local: ChromaDB + multilingual-e5-large + Mistral 7B (Ollama).
+
+  static async plnRequest(endpoint, options = {}) {
+    const url = `${PLN_API_URL}${endpoint}`;
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": PLN_API_KEY,
+      },
+      ...options,
+    };
+    try {
+      const response = await fetch(url, config);
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error("PLN/RAG API Error:", error);
+      throw error;
+    }
+  }
+
+  /** Saúde da API (sem autenticação) — GET /health */
+  static plnHealth() {
+    return this.plnRequest("/health", { method: "GET" });
+  }
+
+  /** Estatísticas do corpus indexado — GET /api/v1/sources */
+  static plnSources() {
+    return this.plnRequest("/api/v1/sources", { method: "GET" });
+  }
+
+  /**
+   * Consulta o assistente técnico RAG (Sueteres).
+   * POST /api/v1/query — { question, filters? }
+   * Retorna: { answer, documents_used, chunks_used, response_confidence, ... }
+   */
+  static plnQuery(question, filters = null) {
+    // O backend exige `filters` como objeto (dict), não aceita null.
+    return this.plnRequest("/api/v1/query", {
+      method: "POST",
+      body: JSON.stringify({ question, filters: filters || {} }),
     });
   }
 }
