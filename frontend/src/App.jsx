@@ -4,8 +4,23 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell,
 } from 'recharts'
+import ReactMarkdown from 'react-markdown'
 import APIService from './services/api'
 import TabIoT from './TabIoT'
+
+// Divide a resposta Markdown do RAG (## Resposta técnica / ## Documentos consultados /
+// ## Trechos utilizados / ## Fontes) em seções, para renderizar cada uma com seu próprio
+// destaque visual em vez de despejar o Markdown bruto na tela.
+function parseAnswerSections(markdown) {
+  if (!markdown) return {}
+  const regex = /##\s*([^\n]+)\n([\s\S]*?)(?=\n##\s|$)/g
+  const sections = {}
+  let match
+  while ((match = regex.exec(markdown)) !== null) {
+    sections[match[1].trim()] = match[2].trim()
+  }
+  return sections
+}
 
 const TABS = [
   { id: 'dashboard',  path: '/',           label: 'Dashboard',    subject: 'Visão Geral do Projeto' },
@@ -272,7 +287,7 @@ export default function App() {
             </>
           } />
           <Route path="/generative" element={<WithSubject id="generative"><TabGenerative /></WithSubject>} />
-          <Route path="/pln"        element={<WithSubject id="pln"><TabPlaceholder tab={TABS.find(t => t.id === 'pln')} /></WithSubject>} />
+          <Route path="/pln"        element={<WithSubject id="pln"><TabPLN /></WithSubject>} />
           <Route path="/visao"      element={<WithSubject id="visao"><TabVisao /></WithSubject>} />
           <Route path="/iot"        element={<WithSubject id="iot"><TabIoT /></WithSubject>} />
           <Route path="/neuro"      element={<WithSubject id="neuro"><TabNeuro /></WithSubject>} />
@@ -1528,6 +1543,197 @@ function TabNeuro() {
           </p>
         </section>
       )}
+    </div>
+  )
+}
+
+// ── Tab: PLN (RAG · Assistente Técnico SUETERES) ──────────────────────────────
+const PLN_EXEMPLOS = [
+  'Quais práticas de reúso de água podem ser aplicadas em regiões afetadas por seca?',
+  'Quais são os requisitos mínimos de eficiência hídrica do LEED v4.1?',
+  'Como o PROCEL Edifica classifica a eficiência energética de edificações?',
+  'O que é um edifício Net Zero de Energia e Água?',
+  'Quais certificações de sustentabilidade são reconhecidas no Brasil?',
+]
+
+function TabPLN() {
+  const [pOnline,   setPOnline]   = useState(false)
+  const [pHealth,   setPHealth]   = useState(null)
+  const [pergunta,  setPergunta]  = useState('')
+  const [historico, setHistorico] = useState([])   // { pergunta, resposta: QueryResponseSchema|null }
+  const [loading,   setLoading]   = useState(false)
+  const [erro,      setErro]      = useState(null)
+  const chatEndRef = useRef(null)
+
+  useEffect(() => {
+    APIService.plnHealth()
+      .then(d => { setPHealth(d); setPOnline(d?.status === 'ok') })
+      .catch(() => { setPOnline(false); setPHealth(null) })
+  }, [])
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [historico, loading])
+
+  const perguntar = async (texto) => {
+    const texto_pergunta = (texto ?? pergunta).trim()
+    if (!texto_pergunta || loading) return
+    setErro(null); setPergunta(''); setLoading(true)
+    setHistorico(h => [...h, { pergunta: texto_pergunta, resposta: null }])
+    try {
+      const r = await APIService.plnQuery(texto_pergunta)
+      setHistorico(h => h.map((m, i) =>
+        i === h.length - 1 ? { ...m, resposta: r } : m
+      ))
+    } catch {
+      setErro('Erro ao consultar o assistente técnico. Inicie com: '
+            + 'cd backend/pln && uvicorn api.main:app --port 8005 '
+            + '(requer Ollama local com o modelo mistral:7b-instruct-v0.3-q4_K_M).')
+      setHistorico(h => h.slice(0, -1))
+    } finally { setLoading(false) }
+  }
+
+  return (
+    <div>
+      {/* Status */}
+      <section className="card">
+        <h2 className="section-title">Status do Assistente Técnico · SUETERES RAG</h2>
+        <div className="status-row">
+          <span className={`api-badge ${pOnline ? 'online' : 'offline'}`}>
+            {pOnline ? '● Online' : '○ Offline'}
+          </span>
+          {pHealth && <>
+            <span className="label">Versão: {pHealth.version}</span>
+            <span className="label">Vetores indexados: {pHealth.vector_store_count}</span>
+            <span className="label">LLM (Ollama): {pHealth.llm_available ? 'disponível' : 'indisponível'}</span>
+          </>}
+        </div>
+        {!pOnline && (
+          <div className="alert-box error" style={{ marginTop: '1rem' }}>
+            Backend offline. Inicie com: <code>cd backend/pln &amp;&amp; uvicorn api.main:app --host 0.0.0.0 --port 8005</code>
+            {' '}(requer Ollama local rodando o modelo <code>mistral:7b-instruct-v0.3-q4_K_M</code>).
+          </div>
+        )}
+      </section>
+
+      {/* Chat */}
+      <section className="card" style={{ marginTop: '1.5rem' }}>
+        <h2 className="section-title">Assistente Técnico — Edifícios Verdes e Net Zero</h2>
+        <p className="label" style={{ marginBottom: '1rem' }}>
+          Pergunte sobre normas, certificações (LEED, AQUA-HQE, Selo Casa Azul+), eficiência
+          energética e hídrica, e tecnologias para edificações sustentáveis. As respostas são
+          geradas <strong>exclusivamente</strong> a partir de um corpus técnico de 15 documentos
+          (61 chunks indexados em ChromaDB), com citação obrigatória das fontes em formato ABNT.
+        </p>
+
+        <div className="genai-chips">
+          {PLN_EXEMPLOS.map((q, i) => (
+            <button key={i} className="genai-chip" disabled={loading || !pOnline}
+              onClick={() => perguntar(q)} title="Perguntar">
+              {q}
+            </button>
+          ))}
+        </div>
+
+        <div className="genai-chat">
+          {historico.length === 0 && (
+            <div className="genai-empty">Faça uma pergunta técnica ou escolha um exemplo acima.</div>
+          )}
+          {historico.map((m, i) => (
+            <div key={i} className="genai-turn">
+              <div className="genai-msg user"><span className="genai-role">Você</span>{m.pergunta}</div>
+              <div className="genai-msg bot">
+                <span className="genai-role">SUETERES</span>
+                {m.resposta === null
+                  ? <span className="genai-typing">consultando o corpus técnico…</span>
+                  : <>
+                      {(() => {
+                        const sections = parseAnswerSections(m.resposta.answer)
+                        const resumo = sections['Resposta técnica'] || m.resposta.answer
+                        const trechos = sections['Trechos utilizados']
+                        return (
+                          <>
+                            <div className="genai-answer markdown-body">
+                              <ReactMarkdown>{resumo}</ReactMarkdown>
+                            </div>
+                            {trechos && (
+                              <details style={{ marginTop: '0.6rem' }}>
+                                <summary style={{ cursor: 'pointer', fontSize: '0.78rem', color: 'var(--accent, #4fd1c5)' }}>
+                                  Ver trechos do corpus utilizados na resposta
+                                </summary>
+                                <div className="markdown-body" style={{ marginTop: '0.5rem', fontSize: '0.78rem' }}>
+                                  <ReactMarkdown>{trechos}</ReactMarkdown>
+                                </div>
+                              </details>
+                            )}
+                          </>
+                        )
+                      })()}
+                      <div className="genai-sources" style={{ marginTop: '0.6rem' }}>
+                        <span className="genai-sources-label">
+                          Confiança: {(m.resposta.response_confidence * 100).toFixed(0)}%
+                          {' · '}Cobertura: {m.resposta.coverage_level}
+                          {' · '}Modelo: {m.resposta.model_used}
+                        </span>
+                      </div>
+                      {m.resposta.documents_used?.length > 0 && (
+                        <div className="genai-sources">
+                          <span className="genai-sources-label">Fontes:</span>
+                          {m.resposta.documents_used.map((d, j) => (
+                            <span key={j} className="genai-source-tag" title={d.citation_abnt}>
+                              {d.title}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </>}
+              </div>
+            </div>
+          ))}
+          <div ref={chatEndRef} />
+        </div>
+
+        {erro && <div className="alert-box error">{erro}</div>}
+
+        <div className="genai-input-row">
+          <input
+            className="genai-input"
+            type="text"
+            placeholder="Digite sua pergunta técnica…"
+            value={pergunta}
+            disabled={!pOnline || loading}
+            onChange={e => setPergunta(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') perguntar() }}
+          />
+          <button className="btn-run" onClick={() => perguntar()}
+            disabled={loading || !pOnline || !pergunta.trim()}>
+            {loading ? 'Consultando…' : 'Consultar'}
+          </button>
+        </div>
+      </section>
+
+      {/* Arquitetura do sistema RAG */}
+      <section className="card" style={{ marginTop: '1.5rem' }}>
+        <h2 className="section-title">Arquitetura do Sistema RAG (SUETERES)</h2>
+        <div className="table-wrapper">
+          <table>
+            <tbody>
+              <tr><td><strong>Pipeline</strong></td><td>QueryProcessor → Embedder → Retriever → Reranker → InCorpusChecker → ContextBuilder → OllamaClient → Guardrails</td></tr>
+              <tr><td><strong>Vector Store</strong></td><td>ChromaDB (persistente, similaridade cosseno)</td></tr>
+              <tr><td><strong>Embedding</strong></td><td>intfloat/multilingual-e5-large (dim. 1024)</td></tr>
+              <tr><td><strong>Reranker</strong></td><td>cross-encoder/ms-marco-MiniLM-L-6-v2</td></tr>
+              <tr><td><strong>LLM</strong></td><td>mistral:7b-instruct-v0.3-q4_K_M (via Ollama local)</td></tr>
+              <tr><td><strong>Anti-alucinação</strong></td><td>5 camadas: threshold de score, grounding por prompt, cobertura de citações, checagem numérica e score de confiança</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="label" style={{ marginTop: '0.6rem', fontSize: '0.77rem', lineHeight: 1.7 }}>
+          Corpus técnico com 15 documentos normativos sobre Edifícios Verdes e Net Zero de Energia
+          e Água (LEED, AQUA-HQE, ABNT NBR 15575/10844, Selo Casa Azul+, PROCEL Edifica, ANA, EPE,
+          ASHRAE 90.1, entre outros). Microsserviço independente — porta 8005 — desenvolvido na
+          disciplina de PLN, integrado ao OVERWATCH como módulo plugável.
+        </p>
+      </section>
     </div>
   )
 }

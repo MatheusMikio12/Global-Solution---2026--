@@ -51,6 +51,22 @@ services:
       - app-network
     command: uvicorn api:app --host 0.0.0.0 --port 8003 --reload
 
+  # Backend PLN — Sueteres RAG (Porta 8005)
+  backend-pln:
+    build:
+      context: ./backend/pln
+      dockerfile: Dockerfile
+    container_name: pln-rag-api
+    ports:
+      - "8005:8005"
+    environment:
+      - APP_ENV=production
+    volumes:
+      - ./backend/pln:/app
+    networks:
+      - app-network
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8005 --reload
+
   # Backend Neuromórfica — NeuroSpace Alert (Porta 8004)
   backend-neuromorfica:
     build:
@@ -77,6 +93,7 @@ services:
       - REACT_APP_API_BASE_URL=http://localhost:8000
       - VITE_GENAI_API_URL=http://localhost:8003
       - VITE_NEURO_API_URL=http://localhost:8004
+      - VITE_PLN_API_URL=http://localhost:8005
     volumes:
       - ./frontend/src:/app/src
     networks:
