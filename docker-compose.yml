@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Backend GS-RPA (Porta 8000)
   backend-gs-rpa:
@@ -34,6 +32,20 @@ services:
     networks:
       - app-network
     command: uvicorn api:app --host 0.0.0.0 --port 8001 --reload
+
+  # Backend Visão Computacional — Wildfire Detection (Porta 8002)
+  backend-visao:
+    build:
+      context: ./backend/visao-computacional
+      dockerfile: Dockerfile
+    container_name: visao-api
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./backend/visao-computacional:/app
+    networks:
+      - app-network
+    command: uvicorn api:app --host 0.0.0.0 --port 8002 --reload
 
   # Backend GenAI / RAG — ORBITAL SENTINEL (Porta 8003)
   backend-genai:
@@ -90,7 +102,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_API_BASE_URL=http://localhost:8000
+      - VITE_API_BASE_URL=http://localhost:8000
+      - VITE_QUANTUM_API_URL=http://localhost:8001
+      - VITE_VISION_API_URL=http://localhost:8002
       - VITE_GENAI_API_URL=http://localhost:8003
       - VITE_NEURO_API_URL=http://localhost:8004
       - VITE_PLN_API_URL=http://localhost:8005
@@ -98,7 +112,7 @@ services:
       - ./frontend/src:/app/src
     networks:
       - app-network
-    command: npm run dev
+    command: npm run dev -- --host 0.0.0.0
 
   # PostgreSQL Database
   postgres:

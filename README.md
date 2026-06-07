@@ -26,7 +26,7 @@ Global-Solution---2026--/
 │   │   └── *.pkl / *.model     # Modelos treinados (NASA POWER)
 │   ├── visao-computacional/    # Visão Computacional (FastAPI :8002)
 │   │   ├── api.py              # Detecção de incêndios (MobileNetV2)
-│   │   ├── modelo_wildfire.keras
+│   │   ├── modelo_wildfire (1).keras
 │   │   └── README.md
 │   ├── genai/                  # GenAI / RAG — ORBITAL SENTINEL (FastAPI :8003)
 │   ├── neuromorfica/           # Computação Neuromórfica — NeuroSpace Alert (FastAPI :8004)
@@ -45,7 +45,9 @@ Global-Solution---2026--/
 │       └── services/api.js     # Cliente HTTP centralizado
 ├── docs/
 │   └── INTEGRATION_PLAN.md     # Auditoria + arquitetura + riscos da integração do módulo PLN
-├── docker-compose.yml
+├── start-backend.ps1           # Sobe todos os backends (e opcionalmente o frontend) de uma vez
+├── docker-compose.yml          # Orquestra os 6 backends + frontend + Postgres + pgAdmin
+├── .env.example                # Modelo de variáveis de ambiente (copie para .env)
 └── README.md
 ```
 
@@ -120,6 +122,47 @@ Detalhes em [backend/pln/README.md](backend/pln/README.md),
 - Git
 - (Opcional) Docker e Docker Compose
 
+### Rodar tudo de uma vez (Windows · PowerShell) — recomendado
+
+Em vez de entrar em cada pasta e rodar o `api.py` manualmente, use o script
+`start-backend.ps1` na raiz. Ele sobe os **6 backends** de uma vez usando o
+`venv/` da raiz do projeto, cada um na sua porta.
+
+```powershell
+# 1ª vez: crie o venv na raiz e instale as dependências de todos os módulos
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r backend/rpa/requirements.txt
+pip install -r backend/quantica/requirements.txt
+pip install -r backend/visao-computacional/requirements.txt
+pip install -r backend/genai/requirements.txt
+pip install -r backend/neuromorfica/requirements.txt
+pip install -r backend/pln/requirements.txt
+
+# Subir os serviços
+.\start-backend.ps1                  # só os 6 backends (uma janela por serviço)
+.\start-backend.ps1 -Frontend        # backends + frontend (porta 3000)
+.\start-backend.ps1 -Frontend -Jobs  # tudo em background, numa janela só
+```
+
+No modo `-Jobs`, gerencie os processos com:
+
+```powershell
+Get-Job | Receive-Job -Keep              # ver logs
+Get-Job | Stop-Job; Get-Job | Remove-Job # parar tudo
+```
+
+> ℹ️ O frontend (Vite) faz bind em `localhost` (IPv6); acesse sempre por
+> **`http://localhost:3000`** e não por `127.0.0.1:3000`.
+>
+> ⚠️ `tensorflow` (Visão) exige `protobuf>=6.31` e `google-generativeai` (GenAI)
+> exige `protobuf<6`. No mesmo `venv` o `pip` mostra um aviso de conflito, mas
+> ambos funcionam em runtime. Se precisar de isolamento estrito, use o Docker
+> (cada serviço tem seu próprio ambiente) ou venvs separados por módulo.
+
+Para subir os módulos individualmente (qualquer SO), veja
+[Frontend](#frontend) e [Backends](#backends) abaixo.
+
 ### Frontend
 
 ```bash
@@ -146,6 +189,11 @@ python api.py
 
 # Visão Computacional (porta 8002)
 cd backend/visao-computacional
+pip install -r requirements.txt
+python api.py
+
+# GenAI / RAG — ORBITAL SENTINEL (porta 8003)
+cd backend/genai
 pip install -r requirements.txt
 python api.py
 
@@ -222,11 +270,31 @@ Cada backend expõe documentação Swagger automática em `/docs`
 
 ## Docker
 
+Cada serviço (6 backends + frontend) tem seu próprio `Dockerfile`; o
+`docker-compose.yml` orquestra tudo junto com Postgres e pgAdmin. O Docker isola
+os ambientes — útil quando o conflito de `protobuf` entre Visão e GenAI incomoda
+em um `venv` único.
+
 ```bash
-docker-compose up -d           # sobe os serviços
-docker-compose logs -f         # acompanha os logs
-docker-compose down            # encerra
+cp .env.example .env           # preencha GOOGLE_API_KEY e GROQ_API_KEY
+docker compose up -d --build   # builda e sobe todos os serviços
+docker compose logs -f         # acompanha os logs
+docker compose down            # encerra
 ```
+
+| Serviço          | URL                     |
+|------------------|-------------------------|
+| RPA              | http://localhost:8000   |
+| Quântica         | http://localhost:8001   |
+| Visão            | http://localhost:8002   |
+| GenAI / RAG      | http://localhost:8003   |
+| Neuromórfica     | http://localhost:8004   |
+| PLN (SUETERES)   | http://localhost:8005   |
+| Frontend         | http://localhost:3000   |
+| pgAdmin          | http://localhost:5050   |
+
+> ℹ️ A primeira build é demorada (Visão baixa TensorFlow; PLN baixa Torch). O PLN
+> também precisa do [Ollama](https://ollama.com) acessível com o modelo Mistral.
 
 ## Segurança
 
