@@ -1518,3 +1518,134 @@ footer {
 .iot-nr-block.influx   { background: rgba(0,242,255,0.07);  border: 1px solid var(--cyan-border); }
 .iot-nr-block.dash     { background: rgba(29,158,117,0.10); border: 1px solid rgba(29,158,117,0.3); }
 .iot-nr-block.tg       { background: rgba(41,128,185,0.12); border: 1px solid rgba(41,128,185,0.35); }
+
+/* ═══════════════════════════════════════════════════════════
+   Página inicial — hero, equipe e índice de módulos
+═══════════════════════════════════════════════════════════ */
+.hero-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 2.5rem 2rem;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.hero-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(0,242,255,0.12) 0%, transparent 70%);
+}
+.hero-eyebrow {
+  position: relative;
+  font-family: var(--hud);
+  font-size: 0.62rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+.hero-title {
+  position: relative;
+  font-family: var(--hud);
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: 8px;
+  color: var(--text-hi);
+  margin: 0.5rem 0;
+  text-shadow: var(--glow);
+}
+.hero-sub {
+  position: relative;
+  max-width: 720px;
+  margin: 0 auto;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text);
+}
+.hero-pipeline {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.75rem;
+}
+.hero-pipeline > span:not(.hero-arrow) {
+  font-family: var(--hud);
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text);
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--cyan-lo);
+  border: 1px solid var(--cyan-border);
+}
+.hero-arrow { color: var(--cyan); font-size: 0.8rem; }
+
+/* Equipe */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.team-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--hud);
+  font-size: 1.05rem;
+  letter-spacing: 1px;
+  color: var(--text-hi);
+  padding: 1.25rem 1rem;
+  border-radius: var(--r-sm);
+  background: var(--cyan-lo);
+  border: 1px solid var(--cyan-border);
+  transition: border-color 0.25s, transform 0.25s;
+}
+.team-card:hover {
+  border-color: var(--cyan);
+  transform: translateY(-3px);
+}
+
+/* Índice de módulos */
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.module-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 1.1rem 1.2rem;
+  border-radius: var(--r-sm);
+  background: var(--glass-hi);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+}
+.module-card:hover {
+  border-color: var(--cyan);
+  transform: translateY(-3px);
+  box-shadow: 0 0 0 1px rgba(0,242,255,0.08), var(--glow-sm);
+}
+.module-card strong {
+  font-family: var(--hud);
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+  color: var(--text-hi);
+}
+.module-card span {
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
