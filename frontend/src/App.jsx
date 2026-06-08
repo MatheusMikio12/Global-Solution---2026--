@@ -23,7 +23,7 @@ function parseAnswerSections(markdown) {
 }
 
 const TABS = [
-  { id: 'dashboard',  path: '/',           label: 'Dashboard',    subject: 'Visão Geral do Projeto' },
+  { id: 'dashboard',  path: '/',           label: 'Início',       subject: 'Visão Geral do Projeto' },
   { id: 'rpa',        path: '/rpa',        label: 'RPA',          subject: 'AI for Robotic Process Automation' },
   { id: 'generative', path: '/generative', label: 'Generative AI', subject: 'Generative AI e Advanced Nets' },
   { id: 'pln',        path: '/pln',        label: 'PLN',          subject: 'PLN, Chatbots & Virtual Agents' },
@@ -36,6 +36,9 @@ const TABS = [
 const SEV_COLOR = { critica: '#C0392B', alta: '#E67E22', media: '#F1C40F', baixa: '#27AE60' }
 const SEV_LABEL = { critica: 'Crítica', alta: 'Alta', media: 'Média', baixa: 'Baixa' }
 const REGION_COLORS = ['#00f2ff', '#00ff9d', '#ff9042', '#b060ff', '#ffd166', '#ff3f6c']
+
+// Integrantes do grupo — exibidos na página inicial.
+const TEAM = ['Matheus', 'Gustavo', 'Henry']
 
 const PLACEHOLDER_CONTENT = {
   generative: {
@@ -324,6 +327,49 @@ function TabDashboard({
 
   return (
     <div>
+      {/* ── Boas-vindas / apresentação do projeto ───────────────────────── */}
+      <section className="hero-card">
+        <span className="hero-eyebrow">FIAP · Global Solution 2026</span>
+        <h1 className="hero-title">OVERWATCH</h1>
+        <p className="hero-sub">
+          Plataforma integrada de previsão climática espacial. Reúne RPA, IA generativa,
+          PLN, visão computacional, IoT, computação neuromórfica e quântica em um único
+          pipeline para detectar anomalias e antecipar desastres ambientais.
+        </p>
+        <div className="hero-pipeline">
+          <span>Satélites &amp; IoT</span><span className="hero-arrow">→</span>
+          <span>Ingestão &amp; Limpeza</span><span className="hero-arrow">→</span>
+          <span>Detecção de Anomalias</span><span className="hero-arrow">→</span>
+          <span>Classificação com IA</span><span className="hero-arrow">→</span>
+          <span>Alertas</span>
+        </div>
+      </section>
+
+      {/* ── Equipe ──────────────────────────────────────────────────────── */}
+      <section className="card" style={{ marginTop: '1.5rem' }}>
+        <h2 className="section-title">Equipe</h2>
+        <div className="team-grid">
+          {TEAM.map(nome => (
+            <div key={nome} className="team-card">{nome}</div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Índice de módulos ───────────────────────────────────────────── */}
+      <section className="card" style={{ marginTop: '1.5rem' }}>
+        <h2 className="section-title">Módulos da Solução</h2>
+        <div className="module-grid">
+          {TABS.filter(t => t.id !== 'dashboard').map(t => (
+            <NavLink key={t.id} to={t.path} className="module-card">
+              <strong>{t.label}</strong>
+              <span>{t.subject}</span>
+            </NavLink>
+          ))}
+        </div>
+      </section>
+
+      <h2 className="section-title" style={{ marginTop: '2rem' }}>Painel da Missão</h2>
+
       {loadingDados && !resumo ? (
         <section className="card">
           <h2 className="section-title">Métricas da Missão</h2>
