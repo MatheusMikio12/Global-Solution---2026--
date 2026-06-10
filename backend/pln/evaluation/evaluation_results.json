@@ -1,6 +1,29 @@
 {
-  "rag_avg_cs": 8.43,
-  "llm_avg_cs": 3.18,
-  "delta_cs": 5.25,
-  "success": true
+  "execution_mode": "mock",
+  "total_questions": 10,
+  "rag_avg": {
+    "cs": 8.43,
+    "ccr": 0.76,
+    "sts": 0.92,
+    "npr": 0.98,
+    "hdr": 0.317,
+    "gq": 0.9
+  },
+  "llm_avg": {
+    "cs": 3.18,
+    "ccr": 0.342,
+    "sts": 0.105,
+    "npr": 0.27,
+    "hdr": 0.4,
+    "gq": 0.25
+  },
+  "deltas": {
+    "cs": 5.25,
+    "ccr": 0.418,
+    "sts": 0.815,
+    "npr": 0.71,
+    "hdr": -0.083,
+    "gq": 0.65
+  },
+  "success_achieved": true
 }
